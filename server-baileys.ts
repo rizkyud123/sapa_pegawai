@@ -1,9 +1,22 @@
-import makeWASocket, { useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion, Browsers } from '@whiskeysockets/baileys';
+import * as BaileysModule from '@whiskeysockets/baileys';
 import pino from 'pino';
 import QRCode from 'qrcode';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
+
+// Handle both CJS bundled and ESM export shape for makeWASocket
+const baileysAny = BaileysModule as any;
+const makeWASocket = 
+  typeof baileysAny.default === 'function' ? baileysAny.default :
+  typeof baileysAny.default?.default === 'function' ? baileysAny.default.default :
+  typeof baileysAny.makeWASocket === 'function' ? baileysAny.makeWASocket :
+  baileysAny;
+
+const useMultiFileAuthState = baileysAny.useMultiFileAuthState || baileysAny.default?.useMultiFileAuthState;
+const DisconnectReason = baileysAny.DisconnectReason || baileysAny.default?.DisconnectReason;
+const fetchLatestBaileysVersion = baileysAny.fetchLatestBaileysVersion || baileysAny.default?.fetchLatestBaileysVersion;
+const Browsers = baileysAny.Browsers || baileysAny.default?.Browsers;
 
 const oldAuthFolder = path.join(process.cwd(), 'auth_info_baileys');
 const authFolder = process.env.BAILEYS_AUTH_DIR || path.join(os.tmpdir(), 'sapa_auth_info_baileys');
