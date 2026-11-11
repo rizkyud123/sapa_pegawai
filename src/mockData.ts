@@ -100,8 +100,29 @@ export const SEED_USULAN_LAYANAN: UsulanLayanan[] = [];
 // 9. Seeding monthly SDMK reports for Lombok Barat (Juni 2026)
 export const SEED_LAPORAN_SDMK: LaporanSDMKBulanan[] = [];
 
-// 10. Seed users (for simulated login/admin lists)
-export const SEED_USERS: User[] = [];
+// 10. Seed users (Default Super Admin & Admin Puskesmas)
+export const SEED_USERS: User[] = [
+  {
+    id: 1,
+    nip: "198501012010011001",
+    nama_lengkap: "Administrator Super (Dinkes)",
+    role: "admin_dinkes",
+    id_puskesmas: null,
+    username: "admin",
+    password: "admin",
+    nomor_wa: "081234567890"
+  },
+  {
+    id: 2,
+    nip: "199002022015022002",
+    nama_lengkap: "Admin UPT Puskesmas Sedau",
+    role: "admin_puskesmas",
+    id_puskesmas: 100,
+    username: "sedau",
+    password: "admin",
+    nomor_wa: "081234567891"
+  }
+];
 
 // Seed data for the Digital Archive library (Arsip Kepegawaian)
 export const SEED_ARSIP_KEPEGAWAIAN: ArsipKepegawaian[] = [];
@@ -131,12 +152,12 @@ export const initializeDB = () => {
   checkInitMaster('simpeg_syarat_fitur_map', INITIAL_SYARAT_FITUR_MAP);
   checkInitMaster('simpeg_profesi_sdmk', MASTER_PROFESI_SDMK);
 
-  // Operational data: start empty to strictly use real cloud data from Cloudflare D1
+  // Operational data: default with SEED_USERS so admin can always login
   checkInitMaster('simpeg_asn_profiles', []);
   checkInitMaster('simpeg_usulan_layanan', []);
   checkInitMaster('simpeg_riwayat_ak', []);
   checkInitMaster('simpeg_laporan_sdmk', []);
-  checkInitMaster('simpeg_users', []);
+  checkInitMaster('simpeg_users', SEED_USERS);
   checkInitMaster('simpeg_arsip_kepegawaian', []);
   checkInitMaster('simpeg_notifications', []);
 
@@ -202,7 +223,8 @@ export const getDB = () => {
   const prof = safeParse<MasterProfesiSDMK[]>('simpeg_profesi_sdmk', []);
   const udoc = safeParse<any[]>('simpeg_usulan_dokumen_file', []);
   const ars = safeParse<ArsipKepegawaian[]>('simpeg_arsip_kepegawaian', []);
-  const usr = safeParse<User[]>('simpeg_users', []);
+  const rawUsers = safeParse<User[]>('simpeg_users', []);
+  const usr = Array.isArray(rawUsers) && rawUsers.length > 0 ? rawUsers : SEED_USERS;
   const ntf = safeParse<InAppNotification[]>('simpeg_notifications', []);
 
   return {
