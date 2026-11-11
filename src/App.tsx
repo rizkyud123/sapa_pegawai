@@ -188,7 +188,7 @@ export default function App() {
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('focus', handleVisibilityChange);
 
-    // 2. Periodic Polling every 20 seconds
+    // 2. Periodic Polling every 6 seconds for real-time mirroring across multiple devices
     const intervalId = setInterval(async () => {
       try {
         const res = await pullCloudDataFromD1();
@@ -205,7 +205,7 @@ export default function App() {
             });
             
             if (hasChanges) {
-              console.log(`🔄 [Sync Polling] Menemukan perubahan data baru di Cloudflare D1: ${updatedKeys.join(', ')}. Memperbarui UI...`);
+              console.log(`🔄 [Sync Polling] Menemukan perubahan data baru di Cloudflare D1: ${updatedKeys.join(', ')}. Memperbarui UI cermin...`);
               saveDB(res.data);
               return {
                 ...prev,
@@ -218,7 +218,7 @@ export default function App() {
       } catch (err) {
         // Silently continue in offline mode
       }
-    }, 20000);
+    }, 6000);
 
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
