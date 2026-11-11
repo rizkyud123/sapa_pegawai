@@ -271,11 +271,26 @@ export default function LoginView({ dbState, onLogin, onReset }: LoginViewProps)
     setIsLoading(true);
 
     setTimeout(() => {
-      const match = dbState.users.find((u) => {
+      // 1. Check against active users in state
+      let match = (dbState.users || []).find((u) => {
         const checkUsername = (u.nip && u.nip.trim() === username.trim()) || 
                               (u.username && u.username.trim().toLowerCase() === username.trim().toLowerCase());
         return checkUsername;
       });
+
+      // 2. Fallback Super Admin: if users list from cloud D1 is still empty or missing admin
+      if (!match && (username.trim().toLowerCase() === 'admin' || username.trim() === '198501012010011001')) {
+        match = {
+          id: 1,
+          nip: '198501012010011001',
+          nama_lengkap: 'Administrator Super (Dinkes)',
+          role: 'admin_dinkes',
+          id_puskesmas: null,
+          username: 'admin',
+          password: 'admin',
+          nomor_wa: '081234567890'
+        };
+      }
 
       if (match) {
         const expectedPassword = match.password || match.nip;
