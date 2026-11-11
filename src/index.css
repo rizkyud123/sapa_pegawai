@@ -1,0 +1,370 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+
+@layer base {
+  body {
+    @apply font-sans bg-slate-50 text-slate-900 antialiased;
+  }
+}
+
+/* ==================== PREMIUM LIGHT THEME OVERRIDES ==================== */
+
+/* Root and Shell */
+#simpeg-rootbox {
+  background-color: #f8fafc !important; /* slate-50 */
+  color: #1e293b !important; /* slate-800 */
+}
+
+/* Header, Footer & Sidebar */
+header {
+  background-color: #ffffff !important;
+  border-bottom: 1px solid #d1fae5 !important;
+}
+footer {
+  background-color: #ffffff !important;
+  border-top: 1px solid #d1fae5 !important;
+}
+footer p {
+  color: #1e293b !important;
+}
+header h1 {
+  color: #0f172a !important;
+}
+header img {
+  border-color: #a7f3d0 !important;
+}
+
+#user-profile-badge-card {
+  background: linear-gradient(135deg, #064e3b 0%, #042f2e 50%, #0f172a 100%) !important;
+  border: 1px solid rgba(16, 185, 129, 0.4) !important;
+}
+#user-profile-badge-card p,
+#user-profile-badge-card span,
+#user-profile-badge-card div {
+  color: #ffffff !important;
+}
+#user-profile-badge-card .text-white {
+  color: #ffffff !important;
+}
+#user-profile-badge-card p.text-amber-300,
+#user-profile-badge-card .text-amber-300 {
+  color: #fde047 !important;
+}
+#user-profile-badge-card button {
+  background-color: rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+}
+#user-profile-badge-card button span {
+  color: #ffffff !important;
+}
+#user-profile-badge-card button:hover {
+  background-color: #e11d48 !important;
+  color: #ffffff !important;
+}
+
+/* Sidebar and Navigation */
+nav {
+  background-color: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05) !important;
+}
+nav p {
+  color: #475569 !important;
+}
+
+/* Sidebar Buttons */
+nav button {
+  transition: all 0.2s ease !important;
+}
+nav button.bg-white\/5 {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+  border: 1px solid #cbd5e1 !important;
+  font-weight: 600 !important;
+}
+nav button:not(.bg-white\/5) {
+  color: #475569 !important;
+}
+nav button:not(.bg-white\/5):hover {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+/* Dynamic badges in sidebar */
+nav span.bg-amber-950 {
+  background-color: #fef3c7 !important; /* amber-100 */
+  color: #92400e !important; /* amber-800 */
+  border-color: #fde68a !important; /* amber-200 */
+}
+
+/* Tenant switcher block */
+#simpeg-rootbox .bg-\[\#16161a\] {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+}
+#simpeg-rootbox .bg-slate-900 {
+  background-color: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+}
+#simpeg-rootbox .bg-slate-900 button {
+  color: #334155 !important; /* slate-700 */
+}
+#simpeg-rootbox .bg-slate-900 button:hover {
+  color: #0f172a !important;
+}
+#simpeg-rootbox .bg-slate-900 button.bg-white\/10 {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+}
+#simpeg-rootbox aside button.bg-emerald-50,
+#simpeg-rootbox aside button.bg-teal-50 {
+  background-color: #ecfdf5 !important; /* soft pastel emerald */
+  color: #064e3b !important; /* high-contrast dark green text */
+  border: 1px solid #a7f3d0 !important;
+  font-weight: 700 !important;
+}
+#simpeg-rootbox aside button.bg-teal-100 {
+  background-color: #d1fae5 !important;
+  color: #064e3b !important;
+  border: 1px solid #6ee7b7 !important;
+  font-weight: 700 !important;
+}
+#simpeg-rootbox aside p.text-black {
+  color: #000000 !important;
+  font-weight: 900 !important;
+}
+
+/* Content cards and elements across All views */
+#simpeg-rootbox .bg-\[\#0f0f12\],
+#simpeg-rootbox .bg-\[\#111114\] {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+}
+
+/* Stats cards counters */
+#simpeg-rootbox :not(#user-profile-badge-card):not(#user-profile-badge-card *) > .text-white,
+#simpeg-rootbox .text-white:not(#user-profile-badge-card *):not(#user-profile-badge-card) {
+  color: #0f172a !important; /* solid black text */
+}
+
+#simpeg-rootbox .text-slate-300:not(#user-profile-badge-card *) {
+  color: #334155 !important;
+}
+
+#simpeg-rootbox .text-slate-405, 
+#simpeg-rootbox .text-slate-400 {
+  color: #475569 !important;
+}
+
+/* Text gray combinations */
+#simpeg-rootbox .text-slate-500 {
+  color: #64748b !important;
+}
+
+/* Border configurations */
+#simpeg-rootbox .border-white\/5,
+#simpeg-rootbox .border-white\/10,
+#simpeg-rootbox .border-white\/20,
+#simpeg-rootbox .border-white\/30 {
+  border-color: #cbd5e1 !important;
+}
+
+/* Select option & Input Fields */
+#simpeg-rootbox select,
+#simpeg-rootbox input[type="text"],
+#simpeg-rootbox input[type="date"],
+#simpeg-rootbox input[type="number"],
+#simpeg-rootbox textarea {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+#simpeg-rootbox select option {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
+/* Table elements */
+#simpeg-rootbox table {
+  background-color: #ffffff !important;
+}
+#simpeg-rootbox thead {
+  background-color: #f1f5f9 !important;
+  border-color: #e2e8f0 !important;
+}
+#simpeg-rootbox thead th {
+  color: #475569 !important;
+  font-weight: 600 !important;
+}
+#simpeg-rootbox tbody tr {
+  border-color: #f1f5f9 !important;
+  background-color: #ffffff !important;
+  color: #334155 !important;
+}
+#simpeg-rootbox tbody tr:hover {
+  background-color: #f8fafc !important;
+}
+
+/* Modal overlays and components */
+#simpeg-rootbox .fixed.inset-0 {
+  background-color: rgba(15, 23, 42, 0.4) !important; /* soft dark overlay */
+}
+#simpeg-rootbox .fixed.inset-0 .bg-\[\#16161a\],
+#simpeg-rootbox .fixed.inset-0 .bg-white {
+  background-color: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Custom Warning/Status Badges Mapping to Safe Light Tones */
+#simpeg-rootbox .bg-emerald-950\/40,
+#simpeg-rootbox .bg-emerald-950\/20,
+#simpeg-rootbox .bg-emerald-950\/10 {
+  background-color: #ecfdf5 !important; /* emerald-50 */
+  color: #065f46 !important; /* emerald-800 */
+  border-color: #a7f3d0 !important; /* emerald-200 */
+}
+#simpeg-rootbox .text-emerald-450,
+#simpeg-rootbox .text-emerald-400 {
+  color: #047857 !important; /* emerald-700 */
+}
+
+#simpeg-rootbox .bg-amber-950\/40,
+#simpeg-rootbox .bg-amber-950\/20 {
+  background-color: #fffbeb !important; /* amber-50 */
+  color: #92400e !important; /* amber-800 */
+  border-color: #fde68a !important; /* amber-200 */
+}
+#simpeg-rootbox .text-amber-450,
+#simpeg-rootbox .text-amber-400 {
+  color: #b45309 !important; /* amber-700 */
+}
+
+#simpeg-rootbox .bg-blue-950\/40,
+#simpeg-rootbox .bg-blue-950\/20 {
+  background-color: #eff6ff !important; /* blue-50 */
+  color: #1e40af !important; /* blue-800 */
+  border-color: #bfdbfe !important; /* blue-200 */
+}
+#simpeg-rootbox .text-blue-400 {
+  color: #1d4ed8 !important; /* blue-700 */
+}
+
+#simpeg-rootbox .bg-rose-950\/40,
+#simpeg-rootbox .bg-rose-950\/30,
+#simpeg-rootbox .bg-rose-950\/20 {
+  background-color: #fff1f2 !important; /* rose-50 */
+  color: #9f1239 !important; /* rose-800 */
+  border-color: #fecdd3 !important; /* rose-200 */
+}
+#simpeg-rootbox .text-rose-450,
+#simpeg-rootbox .text-rose-400 {
+  color: #be123c !important; /* rose-700 */
+}
+
+/* Buttons style mappings */
+#simpeg-rootbox button.bg-slate-800 {
+  background-color: #1e293b !important; /* slate-800 */
+  color: #ffffff !important;
+}
+#simpeg-rootbox button.bg-slate-800:hover {
+  background-color: #0f172a !important;
+}
+#simpeg-rootbox button.bg-white\/10 {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+#simpeg-rootbox button.bg-white\/10:hover {
+  background-color: #e2e8f0 !important;
+}
+
+/* Lists and details cards */
+#simpeg-rootbox .bg-slate-50 {
+  background-color: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+}
+
+#simpeg-rootbox select.text-emerald-400,
+#simpeg-rootbox select.text-amber-400 {
+  color: #047857 !important;
+}
+
+/* ==================== PRINT MEDIA STYLES ==================== */
+@media print {
+  /* Hide every single element in the viewport */
+  body, html, #simpeg-rootbox, #simpeg-rootbox * {
+    visibility: hidden !important;
+    background: transparent !important;
+  }
+  /* Explicitly make only the official letter paper visible */
+  #print-officer-sdmk-paper, #print-officer-sdmk-paper * {
+    visibility: visible !important;
+  }
+  #print-officer-sdmk-paper {
+    position: fixed !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 1.5rem !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+  /* Ensure page breaks don't chop table headers and rows */
+  tr {
+    page-break-inside: avoid !important;
+  }
+  thead {
+    display: table-header-group !important;
+  }
+}
+
+/* ==================== RUNNING TEXT MARQUEE ANIMATION ==================== */
+@keyframes marquee-scroll {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee-scroll 32s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+.animate-marquee-slow {
+  display: flex;
+  width: max-content;
+  animation: marquee-scroll 45s linear infinite;
+}
+
+.animate-marquee-slow:hover {
+  animation-play-state: paused;
+}
+
+.animate-marquee-fast {
+  display: flex;
+  width: max-content;
+  animation: marquee-scroll 22s linear infinite;
+}
+
+.animate-marquee-fast:hover {
+  animation-play-state: paused;
+}
+

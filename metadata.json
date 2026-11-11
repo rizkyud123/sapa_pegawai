@@ -1,0 +1,8 @@
+{
+  "name": "Remix Remix Remix: Remix: Remix: Remix: Remix: Remix: SIMPEG Dinkes PPKB Lombok Barat",
+  "description": "Sistem Informasi Manajemen Kepegawaian Dinkes PPKB Kab. Lombok Barat dengan Dasbor Analisis Kesenjangan Formasi Renbut Kemenkes, Pelaporan SDMK Bulanan, dan Peringatan Dini.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
