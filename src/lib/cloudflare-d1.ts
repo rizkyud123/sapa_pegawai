@@ -384,25 +384,24 @@ INSERT OR IGNORE INTO users (id, nip, nama_lengkap, role, id_puskesmas, username
  */
 export async function testD1Connection(): Promise<{ success: boolean; message: string; mode: string; details?: any }> {
   try {
-    const config = getLocalD1Config();
     const res = await fetch('/api/d1/test', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(config)
+      body: JSON.stringify({})
     });
 
     const data = await res.json();
     if (res.ok && data.success) {
       return {
         success: true,
-        message: `⚡ Terhubung ke Cloudflare D1! Database: ${config.database_name} (${config.database_id}) siap digunakan.`,
+        message: `⚡ Terhubung langsung ke Cloudflare D1 Server! Database siap digunakan.`,
         mode: "LIVE",
         details: data
       };
     } else {
       return {
         success: false,
-        message: data.message || data.error || `Koneksi ke Cloudflare D1 (${config.database_name}) belum terkonfigurasi.`,
+        message: data.message || data.error || `Koneksi ke Cloudflare D1 belum terkonfigurasi di server.`,
         mode: data.needs_credentials ? "CREDENTIALS_NEEDED" : "ERROR",
         details: data
       };
@@ -410,7 +409,7 @@ export async function testD1Connection(): Promise<{ success: boolean; message: s
   } catch (err: any) {
     return {
       success: false,
-      message: `Gagal menghubungi server proxy D1: ${err?.message || err}. Menggunakan Offline Mode.`,
+      message: `Gagal menghubungi server: ${err?.message || err}.`,
       mode: "OFFLINE"
     };
   }
@@ -421,11 +420,10 @@ export async function testD1Connection(): Promise<{ success: boolean; message: s
  */
 export async function executeD1Sql(sql: string, params: any[] = []): Promise<{ success: boolean; data?: any; error?: string }> {
   try {
-    const config = getLocalD1Config();
     const res = await fetch('/api/d1/query', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...config, sql, params })
+      body: JSON.stringify({ sql, params })
     });
     return await res.json();
   } catch (err: any) {
@@ -438,15 +436,13 @@ export async function executeD1Sql(sql: string, params: any[] = []): Promise<{ s
  */
 export async function migrateD1Schema(): Promise<{ success: boolean; log: string[] }> {
   const logs: string[] = [];
-  logs.push("⏳ Mengirim seluruh skema SQL Cloudflare D1 ke database 'sapa_pegawai' (ad596f89-28c6-4266-ac02-90c60833b682)...");
+  logs.push("⏳ Mengirim seluruh skema SQL Cloudflare D1 ke database 'sapa_pegawai'...");
 
   try {
-    const config = getLocalD1Config();
     const res = await fetch('/api/d1/migrate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        ...config,
         sql: CLOUDFLARE_D1_SQL_SCHEMA
       })
     });
@@ -480,11 +476,10 @@ export async function pullCloudDataFromD1(): Promise<{ success: boolean; data?: 
   logs.push("⏳ Menarik seluruh data tabel dari Cloudflare D1 (sapa_pegawai)...");
 
   try {
-    const config = getLocalD1Config();
     const res = await fetch('/api/d1/pull', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(config)
+      body: JSON.stringify({})
     });
 
     const result = await res.json();
@@ -544,12 +539,10 @@ export async function pushClientDataToD1(dbState: any, keysToSync?: string[]): P
   }
 
   try {
-    const config = getLocalD1Config();
     const res = await fetch('/api/d1/push', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        ...config,
         dbState: latestDb,
         keysToSync
       })
