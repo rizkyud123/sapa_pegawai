@@ -13,19 +13,19 @@ const CONFIG_FILE = path.join(process.cwd(), "cloudflare_d1_config.json");
 export function getD1ServerConfig(): D1ServerConfig {
   let config: D1ServerConfig = {
     database_name: "sapa_pegawai",
-    database_id: "ad596f89-28c6-4266-ac02-90c60833b682",
-    account_id: process.env.CLOUDFLARE_ACCOUNT_ID || "be66d713872f04cf7066e1c62ddb2ff5",
-    api_token: process.env.CLOUDFLARE_API_TOKEN || "cfut_yvaIxKQGIb18zMWfdSZ9ScxDXIszXvWuAvqcQawKfed1a415"
+    database_id: process.env.CLOUDFLARE_DATABASE_ID || process.env.CF_DATABASE_ID || "ad596f89-28c6-4266-ac02-90c60833b682",
+    account_id: process.env.CLOUDFLARE_ACCOUNT_ID || process.env.CF_ACCOUNT_ID || "be66d713872f04cf7066e1c62ddb2ff5",
+    api_token: process.env.CLOUDFLARE_API_TOKEN || process.env.CF_API_TOKEN || "cfut_yvaIxKQGIb18zMWfdSZ9ScxDXIszXvWuAvqcQawKfed1a415"
   };
 
   if (fs.existsSync(CONFIG_FILE)) {
     try {
       const data = JSON.parse(fs.readFileSync(CONFIG_FILE, "utf-8"));
       config = {
-        database_name: data.database_name || config.database_name,
-        database_id: data.database_id || config.database_id,
-        account_id: data.account_id || config.account_id,
-        api_token: data.api_token || config.api_token
+        database_name: process.env.CLOUDFLARE_DATABASE_ID ? config.database_name : (data.database_name || config.database_name),
+        database_id: process.env.CLOUDFLARE_DATABASE_ID || process.env.CF_DATABASE_ID || data.database_id || config.database_id,
+        account_id: process.env.CLOUDFLARE_ACCOUNT_ID || process.env.CF_ACCOUNT_ID || data.account_id || config.account_id,
+        api_token: process.env.CLOUDFLARE_API_TOKEN || process.env.CF_API_TOKEN || data.api_token || config.api_token
       };
     } catch (err) {
       console.warn("Failed to read D1 config file:", err);
