@@ -446,7 +446,7 @@ export default function PemantauanASNView({
         // Non ASN (PKWT)
         statusPegawaiTag = 'NON-ASN';
         if (asn.pkwt_tgl_sk_kontrak) {
-          const tglSk = parseDateSafe(asn.pkwt_tgl_sk_kontrak) || new Date(2026, 0, 1);
+          const tglSk = parseDateSafe(asn.pkwt_tgl_sk_kontrak) || new Date(today.getFullYear(), 0, 1);
           tmtPensiun = new Date(tglSk.getFullYear() + 1, 11, 31);
         } else {
           // Kontrak tahunan berjalan
