@@ -25,7 +25,9 @@ import {
   ExternalLink,
   Info,
   Calculator,
-  Plus
+  Plus,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { ASNProfile, Puskesmas } from '../../types';
 import { formatDate, sendWhatsAppMessage, normalizeIndonesianPhoneNumber } from '../../utils';
@@ -184,6 +186,8 @@ export default function PemantauanASNView({
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
   
   // Selected ASN for Update Modal
   const [editingItem, setEditingItem] = useState<any | null>(null);
@@ -607,6 +611,13 @@ export default function PemantauanASNView({
     });
   }, [currentItems, searchQuery, statusFilter]);
 
+  // Pagination for Pemantauan ASN
+  const totalPages = Math.max(1, Math.ceil(filteredItems.length / pageSize));
+  const paginatedItems = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    return filteredItems.slice(startIndex, startIndex + pageSize);
+  }, [filteredItems, currentPage, pageSize]);
+
   // Counts for alert badges
   const counts = useMemo(() => {
     const list = currentItems as any[];
@@ -737,12 +748,18 @@ export default function PemantauanASNView({
                 type="text"
                 placeholder="Cari NIP / Nama / Unit..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setCurrentPage(1);
+                }}
                 className="w-full sm:w-64 pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:bg-white transition"
               />
               {searchQuery && (
                 <button 
-                  onClick={() => setSearchQuery('')}
+                  onClick={() => {
+                    setSearchQuery('');
+                    setCurrentPage(1);
+                  }}
                   className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600"
                 >
                   <X size={14} />
@@ -784,7 +801,10 @@ export default function PemantauanASNView({
             
             <button
               type="button"
-              onClick={() => setStatusFilter('h3')}
+              onClick={() => {
+                setStatusFilter('h3');
+                setCurrentPage(1);
+              }}
               className={`px-3 py-1 rounded-full text-xs font-semibold transition border cursor-pointer flex items-center space-x-1.5 ${
                 statusFilter === 'h3'
                   ? 'bg-rose-100 text-rose-800 border-rose-300 ring-2 ring-rose-300'
@@ -798,7 +818,10 @@ export default function PemantauanASNView({
 
             <button
               type="button"
-              onClick={() => setStatusFilter('lewat')}
+              onClick={() => {
+                setStatusFilter('lewat');
+                setCurrentPage(1);
+              }}
               className={`px-3 py-1 rounded-full text-xs font-semibold transition border cursor-pointer flex items-center space-x-1.5 ${
                 statusFilter === 'lewat'
                   ? 'bg-amber-100 text-amber-800 border-amber-300 ring-2 ring-amber-300'
@@ -814,7 +837,10 @@ export default function PemantauanASNView({
               <>
                 <button
                   type="button"
-                  onClick={() => setStatusFilter('ukom')}
+                  onClick={() => {
+                    setStatusFilter('ukom');
+                    setCurrentPage(1);
+                  }}
                   className={`px-3 py-1 rounded-full text-xs font-semibold transition border cursor-pointer flex items-center space-x-1.5 ${
                     statusFilter === 'ukom'
                       ? 'bg-teal-100 text-teal-800 border-teal-300 ring-2 ring-teal-300'
@@ -828,7 +854,10 @@ export default function PemantauanASNView({
 
                 <button
                   type="button"
-                  onClick={() => setStatusFilter('diklat')}
+                  onClick={() => {
+                    setStatusFilter('diklat');
+                    setCurrentPage(1);
+                  }}
                   className={`px-3 py-1 rounded-full text-xs font-semibold transition border cursor-pointer flex items-center space-x-1.5 ${
                     statusFilter === 'diklat'
                       ? 'bg-blue-100 text-blue-800 border-blue-300 ring-2 ring-blue-300'
@@ -844,7 +873,10 @@ export default function PemantauanASNView({
 
             <button
               type="button"
-              onClick={() => setStatusFilter('aman')}
+              onClick={() => {
+                setStatusFilter('aman');
+                setCurrentPage(1);
+              }}
               className={`px-3 py-1 rounded-full text-xs font-semibold transition border cursor-pointer flex items-center space-x-1.5 ${
                 statusFilter === 'aman'
                   ? 'bg-emerald-100 text-emerald-800 border-emerald-300 ring-2 ring-emerald-300'
@@ -858,7 +890,10 @@ export default function PemantauanASNView({
 
             <button
               type="button"
-              onClick={() => setStatusFilter('all')}
+              onClick={() => {
+                setStatusFilter('all');
+                setCurrentPage(1);
+              }}
               className={`px-3 py-1 rounded-full text-xs font-semibold transition border cursor-pointer ${
                 statusFilter === 'all'
                   ? 'bg-slate-800 text-white border-slate-900 shadow-xs'
@@ -903,7 +938,7 @@ export default function PemantauanASNView({
                   </td>
                 </tr>
               ) : (
-                filteredItems.map((item: any) => (
+                paginatedItems.map((item: any) => (
                   <tr key={`${activeSubTab}-${item.id}`} className="hover:bg-teal-50/20 transition-colors">
                     
                     {/* Kolom 1: Profil Pegawai */}
@@ -1094,6 +1129,85 @@ export default function PemantauanASNView({
             </tbody>
           </table>
         </div>
+
+        {/* Pagination Controls Pemantauan ASN */}
+        {filteredItems.length > 0 && (
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-50 border border-slate-200 p-3 rounded-xl shadow-2xs mt-4 text-xs text-slate-700">
+            <div className="flex items-center space-x-2">
+              <span className="text-[11px] text-slate-500">
+                Menampilkan <strong>{Math.min((currentPage - 1) * pageSize + 1, filteredItems.length)}</strong> - <strong>{Math.min(currentPage * pageSize, filteredItems.length)}</strong> dari <strong>{filteredItems.length}</strong> pegawai
+              </span>
+              <span className="text-slate-300">|</span>
+              <div className="flex items-center space-x-1">
+                <span className="text-[11px] text-slate-500">Per halaman:</span>
+                <select
+                  value={pageSize}
+                  onChange={(e) => {
+                    setPageSize(Number(e.target.value));
+                    setCurrentPage(1);
+                  }}
+                  className="px-2 py-1 border border-slate-300 rounded-md bg-white text-xs font-bold text-slate-800 focus:outline-none"
+                >
+                  <option value={10}>10</option>
+                  <option value={20}>20</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-1">
+              <button
+                type="button"
+                disabled={currentPage <= 1}
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                className="px-2.5 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-200 bg-white disabled:opacity-40 disabled:cursor-not-allowed font-medium text-xs flex items-center space-x-1 transition cursor-pointer"
+              >
+                <ChevronLeft size={14} />
+                <span>Sebelumnya</span>
+              </button>
+
+              {/* Page Numbers */}
+              <div className="flex items-center space-x-1 px-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter(page => {
+                    return page === 1 || page === totalPages || Math.abs(page - currentPage) <= 1;
+                  })
+                  .map((page, i, arr) => {
+                    const prevPage = arr[i - 1];
+                    const hasGap = prevPage && page - prevPage > 1;
+
+                    return (
+                      <React.Fragment key={page}>
+                        {hasGap && <span className="px-1 text-slate-400">...</span>}
+                        <button
+                          type="button"
+                          onClick={() => setCurrentPage(page)}
+                          className={`w-7 h-7 rounded-lg text-xs font-bold transition cursor-pointer ${
+                            currentPage === page
+                              ? 'bg-teal-700 text-white shadow-xs'
+                              : 'bg-white border border-slate-200 hover:bg-slate-100 text-slate-700'
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      </React.Fragment>
+                    );
+                  })}
+              </div>
+
+              <button
+                type="button"
+                disabled={currentPage >= totalPages}
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                className="px-2.5 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-200 bg-white disabled:opacity-40 disabled:cursor-not-allowed font-medium text-xs flex items-center space-x-1 transition cursor-pointer"
+              >
+                <span>Berikutnya</span>
+                <ChevronRight size={14} />
+              </button>
+            </div>
+          </div>
+        )}
 
       </div>
 
