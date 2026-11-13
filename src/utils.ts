@@ -5,9 +5,13 @@
 
 import { ASNProfile, RiwayatAngkaKredit, PredikatSKP } from './types';
 
-// Anchor system date: June 11, 2026
-export const SYSTEM_DATE_STR = "2026-06-11";
-export const SYSTEM_DATE = new Date(SYSTEM_DATE_STR);
+// Dynamic real-time system calendar date (running year & month)
+export function getCurrentSystemDate(): Date {
+  return new Date();
+}
+
+export const SYSTEM_DATE = new Date();
+export const SYSTEM_DATE_STR = new Date().toISOString().split('T')[0];
 
 export function formatDate(dateString: string): string {
   try {
@@ -42,8 +46,9 @@ export interface EarlyWarningAlert {
 /**
  * Multi-Tenant Local Early Warning System logic matcher
  */
-export function getEarlyWarningAlerts(asnList: ASNProfile[]): EarlyWarningAlert[] {
+export function getEarlyWarningAlerts(asnList: ASNProfile[], referenceDate: Date = new Date()): EarlyWarningAlert[] {
   const alerts: EarlyWarningAlert[] = [];
+  const refDate = referenceDate || new Date();
 
   asnList.forEach(asn => {
     if (asn.status_kepegawaian !== 'Aktif') return;
@@ -51,7 +56,7 @@ export function getEarlyWarningAlerts(asnList: ASNProfile[]): EarlyWarningAlert[
     // 1. PENSIUN (BUP is 58 years for common civil service / clinical Jafung in primary clinics)
     const birthDate = new Date(asn.tanggal_lahir);
     const targetPensiun = new Date(birthDate.getFullYear() + 58, birthDate.getMonth(), birthDate.getDate());
-    const mPensiun = countMonthDiff(SYSTEM_DATE, targetPensiun);
+    const mPensiun = countMonthDiff(refDate, targetPensiun);
 
     if (mPensiun > 0 && mPensiun <= 6) {
       alerts.push({
@@ -71,7 +76,7 @@ export function getEarlyWarningAlerts(asnList: ASNProfile[]): EarlyWarningAlert[
     // 2. KENAIKAN PANGKAT (Period is every 4 years)
     const pangkatDate = new Date(asn.tmt_pangkat_terakhir);
     const targetPangkat = new Date(pangkatDate.getFullYear() + 4, pangkatDate.getMonth(), pangkatDate.getDate());
-    const mPangkat = countMonthDiff(SYSTEM_DATE, targetPangkat);
+    const mPangkat = countMonthDiff(refDate, targetPangkat);
 
     if (mPangkat > 0 && mPangkat <= 4) {
       alerts.push({
@@ -91,7 +96,7 @@ export function getEarlyWarningAlerts(asnList: ASNProfile[]): EarlyWarningAlert[
     // 3. GAJI BERKALA (Period is every 2 years)
     const berkalaDate = new Date(asn.tmt_berkala_terakhir);
     const targetBerkala = new Date(berkalaDate.getFullYear() + 2, berkalaDate.getMonth(), berkalaDate.getDate());
-    const mBerkala = countMonthDiff(SYSTEM_DATE, targetBerkala);
+    const mBerkala = countMonthDiff(refDate, targetBerkala);
 
     if (mBerkala > 0 && mBerkala <= 2) {
       alerts.push({
@@ -110,7 +115,7 @@ export function getEarlyWarningAlerts(asnList: ASNProfile[]): EarlyWarningAlert[
 
     // 4. KP4 / MODEL DK (Annual Family Allowance Validation update for current year)
     if (asn.status_pegawai_detail && asn.status_pegawai_detail !== 'Non_ASN') {
-      const currentYear = SYSTEM_DATE.getFullYear();
+      const currentYear = refDate.getFullYear();
       if (!asn.kp4_tahun_validasi || asn.kp4_tahun_validasi < currentYear) {
         alerts.push({
           id: `kp4-${asn.id}`,
