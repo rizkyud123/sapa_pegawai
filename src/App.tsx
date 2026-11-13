@@ -39,7 +39,9 @@ import {
   ChevronUp,
   FileCheck,
   Link,
-  MessageSquare
+  MessageSquare,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { getDB, saveDB, initializeDB, getFallbackProfesiId } from './mockData';
@@ -594,6 +596,8 @@ export default function App() {
   }); // defaults to 100 for admin_dinkes, 'ALL' for others
   const [rosterStatusFilter, setRosterStatusFilter] = useState<string>('ALL'); // 'ALL', 'PNS', etc.
   const [rosterSubJenisJabatanFilter, setRosterSubJenisJabatanFilter] = useState<string>('ALL');
+  const [rosterCurrentPage, setRosterCurrentPage] = useState<number>(1);
+  const [rosterPageSize, setRosterPageSize] = useState<number>(10);
 
   // Navigation parameters for deep links
   const [navAsnId, setNavAsnId] = useState<number | null>(null);
@@ -1126,6 +1130,13 @@ export default function App() {
 
     return true;
   });
+
+  // Pagination for Direktori Pegawai
+  const totalRosterPages = Math.max(1, Math.ceil(filteredRoster.length / rosterPageSize));
+  const paginatedRoster = useMemo(() => {
+    const startIndex = (rosterCurrentPage - 1) * rosterPageSize;
+    return filteredRoster.slice(startIndex, startIndex + rosterPageSize);
+  }, [filteredRoster, rosterCurrentPage, rosterPageSize]);
 
   // Handle adding employee manual form submission (Puskesmas or Dinkes)
   const handleAddEmployeeManual = (e: React.FormEvent) => {
@@ -3960,7 +3971,10 @@ export default function App() {
                     <label className="text-[10px] text-slate-500 uppercase font-bold block">Status Kepegawaian</label>
                     <select
                       value={rosterStatusFilter}
-                      onChange={(e) => setRosterStatusFilter(e.target.value)}
+                      onChange={(e) => {
+                        setRosterStatusFilter(e.target.value);
+                        setRosterCurrentPage(1);
+                      }}
                       className="p-2 border border-slate-300 bg-white text-black rounded-lg focus:outline-none font-semibold"
                     >
                       <option value="ALL">Semua Jenis Status</option>
@@ -3976,7 +3990,10 @@ export default function App() {
                     <label className="text-[10px] text-slate-500 uppercase font-bold block">Sub-Jenis Jabatan (SDMK)</label>
                     <select
                       value={rosterSubJenisJabatanFilter}
-                      onChange={(e) => setRosterSubJenisJabatanFilter(e.target.value)}
+                      onChange={(e) => {
+                        setRosterSubJenisJabatanFilter(e.target.value);
+                        setRosterCurrentPage(1);
+                      }}
                       className="p-2 border border-slate-300 bg-white text-black rounded-lg focus:outline-none font-semibold"
                     >
                       <option value="ALL">Semua Sub-Jenis Jabatan</option>
@@ -4000,6 +4017,7 @@ export default function App() {
                         onChange={(e) => {
                           const val = e.target.value;
                           setRosterUnitFilter(val === 'ALL' ? 'ALL' : Number(val));
+                          setRosterCurrentPage(1);
                         }}
                         className="p-2 border border-slate-300 bg-white text-black rounded-lg focus:outline-none font-bold"
                       >
@@ -4022,7 +4040,10 @@ export default function App() {
                       type="text"
                       placeholder="Cari nama, NIP, jafung..."
                       value={rosterSearch}
-                      onChange={(e) => setRosterSearch(e.target.value)}
+                      onChange={(e) => {
+                        setRosterSearch(e.target.value);
+                        setRosterCurrentPage(1);
+                      }}
                       className="pl-8 pr-4 py-1.5 border border-white/5 bg-[#16161a] text-white rounded-xl text-xs w-60 focus:ring-1 focus:ring-emerald-500 focus:outline-none block"
                     />
                   </div>
@@ -4049,7 +4070,7 @@ export default function App() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 font-medium">
-                    {filteredRoster.map((asn, idx) => {
+                    {paginatedRoster.map((asn, idx) => {
                       const displayStatus = asn.status_pegawai_detail === 'PNS' 
                         ? 'PNS' 
                         : asn.status_pegawai_detail === 'PPPK_Penuh_Waktu' 
@@ -4084,10 +4105,12 @@ export default function App() {
                         ? addYearsToDateString(tmtBerkalaTerakhir, 2) 
                         : '-';
 
+                      const rowNumber = (rosterCurrentPage - 1) * rosterPageSize + idx + 1;
+
                       return (
                         <tr key={asn.id} className="hover:bg-slate-50/80 transition text-slate-900 border-b border-slate-100">
                           <td className="p-3 text-center text-slate-400 font-mono font-bold w-12 border-r border-slate-100">
-                            {idx + 1}
+                            {rowNumber}
                           </td>
                           <td className="p-3">
                             <button
@@ -4217,6 +4240,86 @@ export default function App() {
                   </tbody>
                 </table>
               </div>
+
+              {/* Pagination Controls Direktori Pegawai */}
+              {filteredRoster.length > 0 && (
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white border border-slate-200 p-3 rounded-xl shadow-xs mt-3 text-xs text-slate-700">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-[11px] text-slate-500">
+                      Menampilkan <strong>{Math.min((rosterCurrentPage - 1) * rosterPageSize + 1, filteredRoster.length)}</strong> - <strong>{Math.min(rosterCurrentPage * rosterPageSize, filteredRoster.length)}</strong> dari <strong>{filteredRoster.length}</strong> pegawai
+                    </span>
+                    <span className="text-slate-300">|</span>
+                    <div className="flex items-center space-x-1">
+                      <span className="text-[11px] text-slate-500">Per halaman:</span>
+                      <select
+                        value={rosterPageSize}
+                        onChange={(e) => {
+                          setRosterPageSize(Number(e.target.value));
+                          setRosterCurrentPage(1);
+                        }}
+                        className="px-2 py-1 border border-slate-300 rounded-md bg-white text-xs font-bold text-slate-800 focus:outline-none"
+                      >
+                        <option value={10}>10</option>
+                        <option value={20}>20</option>
+                        <option value={50}>50</option>
+                        <option value={100}>100</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-1">
+                    <button
+                      type="button"
+                      disabled={rosterCurrentPage <= 1}
+                      onClick={() => setRosterCurrentPage(prev => Math.max(1, prev - 1))}
+                      className="px-2.5 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-medium text-xs flex items-center space-x-1 transition cursor-pointer"
+                    >
+                      <ChevronLeft size={14} />
+                      <span>Sebelumnya</span>
+                    </button>
+
+                    {/* Page Numbers */}
+                    <div className="flex items-center space-x-1 px-1">
+                      {Array.from({ length: totalRosterPages }, (_, i) => i + 1)
+                        .filter(page => {
+                          // Show current page, edges, and near neighbors
+                          return page === 1 || page === totalRosterPages || Math.abs(page - rosterCurrentPage) <= 1;
+                        })
+                        .map((page, i, arr) => {
+                          const prevPage = arr[i - 1];
+                          const hasGap = prevPage && page - prevPage > 1;
+
+                          return (
+                            <React.Fragment key={page}>
+                              {hasGap && <span className="px-1 text-slate-400">...</span>}
+                              <button
+                                type="button"
+                                onClick={() => setRosterCurrentPage(page)}
+                                className={`w-7 h-7 rounded-lg text-xs font-bold transition cursor-pointer ${
+                                  rosterCurrentPage === page
+                                    ? 'bg-teal-700 text-white shadow-xs'
+                                    : 'border border-slate-200 hover:bg-slate-100 text-slate-700'
+                                }`}
+                              >
+                                {page}
+                              </button>
+                            </React.Fragment>
+                          );
+                        })}
+                    </div>
+
+                    <button
+                      type="button"
+                      disabled={rosterCurrentPage >= totalRosterPages}
+                      onClick={() => setRosterCurrentPage(prev => Math.min(totalRosterPages, prev + 1))}
+                      className="px-2.5 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-medium text-xs flex items-center space-x-1 transition cursor-pointer"
+                    >
+                      <span>Berikutnya</span>
+                      <ChevronRight size={14} />
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
