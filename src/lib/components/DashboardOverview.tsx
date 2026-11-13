@@ -478,27 +478,41 @@ export default function DashboardOverview({
     }
   };
 
+  // Dynamic real-time calculation based on current wall-clock date
+  const nowSystemDate = new Date();
+  const currentRunningYear = nowSystemDate.getFullYear();
+  const currentRunningMonth = nowSystemDate.getMonth(); // 0 - 11
+
+  const indonesianMonthNames = [
+    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 
+    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+  ];
+
+  // Target Next Month label calculation
+  const nextMonthDate = new Date(nowSystemDate.getFullYear(), nowSystemDate.getMonth() + 1, 1);
+  const targetBulanDepanLabel = `${indonesianMonthNames[nextMonthDate.getMonth()]} ${nextMonthDate.getFullYear()}`;
+
   // Filter profiles and usulan based on role tenancy
   const visibleAsn = currentRole === 'admin_dinkes' 
     ? asnProfiles 
     : asnProfiles.filter(p => p.id_puskesmas === selectedPuskesmasId);
 
-  // Active early warning alerts
-  const alerts = getEarlyWarningAlerts(visibleAsn);
+  // Active early warning alerts grounded in real-time current date
+  const alerts = getEarlyWarningAlerts(visibleAsn, nowSystemDate);
 
-  // --- SINKRONISASI LENGKAP DENGAN PEMANTAUAN ASN (TAHUN 2026) ---
+  // --- SINKRONISASI LENGKAP DENGAN PEMANTAUAN ASN (TAHUN BERJALAN DINAMIS) ---
   // Aturan KemenPAN-RB No. 1/2023, BKN 6 Periode, PermenPAN-RB No. 7/2023, & UU ASN No. 20/2023
 
-  // A. GOLONGAN / PANGKAT (PNS: Siklus 4 Tahun atau Due Tahun Berjalan 2026)
+  // A. GOLONGAN / PANGKAT (PNS: Siklus 4 Tahun atau Due Tahun Berjalan)
   const pangkat2026List = visibleAsn.filter(p => {
     if (p.status_kepegawaian === 'Pensiun') return false;
     if (p.status_pegawai_detail !== 'PNS') return false;
     const lastDateStr = p.tmt_pangkat_terakhir || p.pns_tmt_golongan;
     if (!lastDateStr) return false;
     const year = getYearOfDate(lastDateStr);
-    return year + 4 <= 2026;
+    return year + 4 <= currentRunningYear;
   }).map(p => {
-    const lastDate = p.tmt_pangkat_terakhir || p.pns_tmt_golongan || '2022-04-01';
+    const lastDate = p.tmt_pangkat_terakhir || p.pns_tmt_golongan || `${currentRunningYear - 4}-04-01`;
     const lastDateObj = new Date(lastDate);
     const targetYear = getYearOfDate(lastDate) + 4;
     const targetDateStr = `${targetYear}-${String(lastDateObj.getMonth() + 1).padStart(2, '0')}-${String(lastDateObj.getDate()).padStart(2, '0')}`;
@@ -510,7 +524,7 @@ export default function DashboardOverview({
     };
   });
 
-  // B. JABATAN (JAFUNG) (Tenaga Fungsional: Siklus 3 Tahun atau Terpenuhi Masa Jabatan 2026)
+  // B. JABATAN (JAFUNG) (Tenaga Fungsional: Siklus 3 Tahun atau Terpenuhi Masa Jabatan Tahun Berjalan)
   const jafung2026List = visibleAsn.filter(p => {
     if (p.status_kepegawaian === 'Pensiun') return false;
     const isJafung = p.jenis_pegawai === 'Jafung_Kesehatan' || Boolean(p.jenjang_jafung) || (p.pns_jenis_jabatan && p.pns_jenis_jabatan.toLowerCase().includes('fungsional'));
@@ -518,9 +532,9 @@ export default function DashboardOverview({
     const lastDateStr = p.tmt_jabatan_terakhir || p.tmt_pangkat_terakhir;
     if (!lastDateStr) return true;
     const year = getYearOfDate(lastDateStr);
-    return year + 3 <= 2026;
+    return year + 3 <= currentRunningYear;
   }).map(p => {
-    const lastDate = p.tmt_jabatan_terakhir || p.tmt_pangkat_terakhir || '2022-01-01';
+    const lastDate = p.tmt_jabatan_terakhir || p.tmt_pangkat_terakhir || `${currentRunningYear - 3}-01-01`;
     const lastDateObj = new Date(lastDate);
     const targetYear = getYearOfDate(lastDate) + 3;
     const targetDateStr = `${targetYear}-${String(lastDateObj.getMonth() + 1).padStart(2, '0')}-${String(lastDateObj.getDate()).padStart(2, '0')}`;
@@ -532,7 +546,7 @@ export default function DashboardOverview({
     };
   });
 
-  // C. GAJI BERKALA (KGB) (PNS & PPPK: Siklus 2 Tahun atau Jatuh Tempo 2026)
+  // C. GAJI BERKALA (KGB) (PNS & PPPK: Siklus 2 Tahun atau Jatuh Tempo Tahun Berjalan)
   const kgb2026List = visibleAsn.filter(p => {
     if (p.status_kepegawaian === 'Pensiun') return false;
     const isEligibleKgb = p.status_pegawai_detail === 'PNS' || p.status_pegawai_detail === 'PPPK_Penuh_Waktu' || p.status_pegawai_detail === 'PPPK_Paruh_Waktu';
@@ -540,9 +554,9 @@ export default function DashboardOverview({
     const lastDateStr = p.tmt_berkala_terakhir || p.tmt_pangkat_terakhir;
     if (!lastDateStr) return true;
     const year = getYearOfDate(lastDateStr);
-    return year + 2 <= 2026;
+    return year + 2 <= currentRunningYear;
   }).map(p => {
-    const lastDate = p.tmt_berkala_terakhir || p.tmt_pangkat_terakhir || '2024-01-01';
+    const lastDate = p.tmt_berkala_terakhir || p.tmt_pangkat_terakhir || `${currentRunningYear - 2}-01-01`;
     const lastDateObj = new Date(lastDate);
     const targetYear = getYearOfDate(lastDate) + 2;
     const targetDateStr = `${targetYear}-${String(lastDateObj.getMonth() + 1).padStart(2, '0')}-${String(lastDateObj.getDate()).padStart(2, '0')}`;
@@ -555,17 +569,16 @@ export default function DashboardOverview({
   });
 
   // D. SISA CUTI TAHUNAN & BUP PENSIUN
-  // Active employees who have remaining annual leaves under 4 days in 2026.
+  // Active employees who have remaining annual leaves under 4 days in current year.
   const cuti2026List = visibleAsn.filter(p => {
     return p.status_kepegawaian === 'Aktif' && (p.sisa_cuti_tahunan || 0) > 0 && (p.sisa_cuti_tahunan || 0) < 4;
   }).map(p => {
-    // Generate a beautiful, distributed proposed month inside second half of 2026
     const months = ['Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
     const monthName = months[p.id % months.length];
     return {
       ...p,
       bulanPengajuan: monthName,
-      tatDate: `Tahun 2026 (Sisa: ${p.sisa_cuti_tahunan} Hari)`,
+      tatDate: `Tahun ${currentRunningYear} (Sisa: ${p.sisa_cuti_tahunan} Hari)`,
       description: `Pengajuan Sisa Cuti - Kuota ${p.sisa_cuti_tahunan} Hari Kerja`
     };
   });
@@ -692,7 +705,7 @@ Pesan ini disusun secara otomatis oleh SAPA pegawai UPT Puskesmas Sedau (Sistem 
           '- PAK (Penetapan Angka Kredit) Terakhir',
           '- Sasaran Kinerja Pegawai (SKP) 2 Tahun Terakhir'
         ];
-        messageBody = `menghimbau bahwa Anda teranalisa berpotensi mengajukan kenaikan pangkat/golongan untuk Tahun Berjalan 2026 (TAT: ${p.tmt_pangkat_terakhir ? formatDate(p.tmt_pangkat_terakhir) : '-'}).`;
+        messageBody = `menghimbau bahwa Anda teranalisa berpotensi mengajukan kenaikan pangkat/golongan untuk Tahun Berjalan ${currentRunningYear} (TAT: ${p.tmt_pangkat_terakhir ? formatDate(p.tmt_pangkat_terakhir) : '-'}).`;
         break;
       case 'jafung':
         serviceName = 'Layanan Peningkatan Jabatan (Jafung)';
@@ -886,7 +899,7 @@ Informasi ini dikirim langsung dari Dashboard SAPA pegawai UPT Puskesmas Sedau (
     switch (activeKpiFilter) {
       case 'pangkat':
         return {
-          title: "Analisa Rincian Usul Kenaikan GOLONGAN / PANGKAT (Tahun Berjalan 2026)",
+          title: `Analisa Rincian Usul Kenaikan GOLONGAN / PANGKAT (Tahun Berjalan ${currentRunningYear})`,
           headers: ["Nama Pegawai / NIP", "Unit Kerja", "Bulan Pengajuan", "TMT Terakhir/Golongan", "Target TMT Baru (TAT Pangkat)", "Aksi"],
           list: pangkat2026List,
           renderRow: (p: any, idx: number) => (
@@ -896,7 +909,7 @@ Informasi ini dikirim langsung dari Dashboard SAPA pegawai UPT Puskesmas Sedau (
                 <div className="text-[10px] text-slate-400 font-mono">NIP {p.nip}</div>
               </td>
               <td className="p-3 text-slate-600 font-medium">{getPuskesmasName(p.id_puskesmas)}</td>
-              <td className="p-3"><span className="px-2 py-1 bg-indigo-50 text-indigo-700 font-bold rounded-lg text-[10px]">{p.bulanPengajuan} 2026</span></td>
+              <td className="p-3"><span className="px-2 py-1 bg-indigo-50 text-indigo-700 font-bold rounded-lg text-[10px]">{p.bulanPengajuan} {currentRunningYear}</span></td>
               <td className="p-3 font-mono text-slate-500">{formatDate(p.tmt_pangkat_terakhir)} ({p.golongan_ruang})</td>
               <td className="p-3 text-emerald-600 font-bold font-mono">
                 <span className="bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-lg border border-emerald-200">
@@ -918,7 +931,7 @@ Informasi ini dikirim langsung dari Dashboard SAPA pegawai UPT Puskesmas Sedau (
         };
       case 'jafung':
         return {
-          title: "Analisa Rincian Usul Peningkatan JABATAN (JAFUNG) (Tahun Berjalan 2026)",
+          title: `Analisa Rincian Usul Peningkatan JABATAN (JAFUNG) (Tahun Berjalan ${currentRunningYear})`,
           headers: ["Nama Pegawai / NIP", "Unit Kerja", "Bulan Pengajuan", "TMT Jabatan Terakhir", "Target/TAT Jabatan Baru", "Aksi"],
           list: jafung2026List,
           renderRow: (p: any, idx: number) => (
@@ -928,7 +941,7 @@ Informasi ini dikirim langsung dari Dashboard SAPA pegawai UPT Puskesmas Sedau (
                 <div className="text-[10px] text-slate-400 font-mono">NIP {p.nip}</div>
               </td>
               <td className="p-3 text-slate-600 font-medium">{getPuskesmasName(p.id_puskesmas)}</td>
-              <td className="p-3"><span className="px-2 py-1 bg-purple-50 text-purple-700 font-bold rounded-lg text-[10px]">{p.bulanPengajuan} 2026</span></td>
+              <td className="p-3"><span className="px-2 py-1 bg-purple-50 text-purple-700 font-bold rounded-lg text-[10px]">{p.bulanPengajuan} {currentRunningYear}</span></td>
               <td className="p-3 font-mono text-slate-500">{formatDate(p.tmt_jabatan_terakhir)} ({p.jenjang_jafung || 'Fungsional'})</td>
               <td className="p-3 text-pink-600 font-bold font-mono">
                 <span className="bg-pink-50 text-pink-700 px-2.5 py-1 rounded-lg border border-pink-200">
@@ -950,7 +963,7 @@ Informasi ini dikirim langsung dari Dashboard SAPA pegawai UPT Puskesmas Sedau (
         };
       case 'kgb':
         return {
-          title: "Analisa Rincian Usul Kenaikan GAJI BERKALA (KGB) (Tahun Berjalan 2026)",
+          title: `Analisa Rincian Usul Kenaikan GAJI BERKALA (KGB) (Tahun Berjalan ${currentRunningYear})`,
           headers: ["Nama Pegawai / NIP", "Unit Kerja", "Bulan Pengajuan", "TMT Berkala Terakhir", "Target/TAT KGB Baru", "Aksi"],
           list: kgb2026List,
           renderRow: (p: any, idx: number) => (
@@ -960,7 +973,7 @@ Informasi ini dikirim langsung dari Dashboard SAPA pegawai UPT Puskesmas Sedau (
                 <div className="text-[10px] text-slate-400 font-mono">NIP {p.nip}</div>
               </td>
               <td className="p-3 text-slate-600 font-medium">{getPuskesmasName(p.id_puskesmas)}</td>
-              <td className="p-3"><span className="px-2 py-1 bg-teal-50 text-teal-700 font-bold rounded-lg text-[10px]">{p.bulanPengajuan} 2026</span></td>
+              <td className="p-3"><span className="px-2 py-1 bg-teal-50 text-teal-700 font-bold rounded-lg text-[10px]">{p.bulanPengajuan} {currentRunningYear}</span></td>
               <td className="p-3 font-mono text-slate-500">{formatDate(p.tmt_berkala_terakhir)}</td>
               <td className="p-3 text-teal-600 font-bold font-mono">
                 <span className="bg-teal-50 text-teal-700 px-2.5 py-1 rounded-lg border border-teal-200">
@@ -982,7 +995,7 @@ Informasi ini dikirim langsung dari Dashboard SAPA pegawai UPT Puskesmas Sedau (
         };
       case 'cuti':
         return {
-          title: "Analisa & Sisa Hari SISA CUTI TAHUNAN Pegawai (Tahun Berjalan 2026)",
+          title: `Analisa & Sisa Hari SISA CUTI TAHUNAN Pegawai (Tahun Berjalan ${currentRunningYear})`,
           headers: ["Nama Pegawai / NIP", "Unit Kerja", "Rekomendasi / Bulan Pengajuan", "Sisa Cuti Aktif", "Keterangan", "Aksi"],
           list: cuti2026List,
           renderRow: (p: any, idx: number) => (
@@ -992,7 +1005,7 @@ Informasi ini dikirim langsung dari Dashboard SAPA pegawai UPT Puskesmas Sedau (
                 <div className="text-[10px] text-slate-400 font-mono">NIP {p.nip}</div>
               </td>
               <td className="p-3 text-slate-600 font-medium">{getPuskesmasName(p.id_puskesmas)}</td>
-              <td className="p-3"><span className="px-2 py-1 bg-amber-50 text-amber-700 font-bold rounded-lg text-[10px]">{p.bulanPengajuan} 2026</span></td>
+              <td className="p-3"><span className="px-2 py-1 bg-amber-50 text-amber-700 font-bold rounded-lg text-[10px]">{p.bulanPengajuan} {currentRunningYear}</span></td>
               <td className="p-3 font-bold font-mono text-slate-800">{p.sisa_cuti_tahunan} Hari Kerja</td>
               <td className="p-3">
                 <span className="px-2 py-1 bg-slate-100 font-semibold rounded text-[10px] text-slate-500">
@@ -2059,17 +2072,17 @@ Informasi ini dikirim langsung dari Dashboard SAPA pegawai UPT Puskesmas Sedau (
         </div>
       </div>
 
-      {/* 2. INTERACTIVE KPI CARDS & ANALYSIS CENTER (TAHUN 2026) */}
+      {/* 2. INTERACTIVE KPI CARDS & ANALYSIS CENTER (TAHUN BERJALAN DINAMIS) */}
       <div className="space-y-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 text-left">
           <div>
             <h2 className="text-base font-black text-slate-800 uppercase tracking-wider font-display flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-teal-600 inline-block animate-pulse" />
-              Pusat Analisa &amp; Peringatan Dini Usulan 2026
+              Pusat Analisa &amp; Peringatan Dini Usulan {currentRunningYear}
             </h2>
           </div>
           <span className="text-[10px] bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-full font-bold px-2.5 py-1 select-none whitespace-nowrap self-start md:self-center">
-            TAHUN ANALISA: 2026 (BERJALAN)
+            TAHUN ANALISA: {currentRunningYear} (BERJALAN)
           </span>
         </div>
 
@@ -3260,7 +3273,7 @@ Informasi ini dikirim langsung dari Dashboard SAPA pegawai UPT Puskesmas Sedau (
             </div>
           </div>
           <span className="text-xs text-emerald-400 bg-emerald-950/40 border border-emerald-500/20 px-3 py-1 rounded-md font-bold">
-            Target Bulan Depan: Juli 2026
+            Target Bulan Depan: {targetBulanDepanLabel}
           </span>
         </div>
 
