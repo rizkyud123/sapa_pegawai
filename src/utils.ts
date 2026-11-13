@@ -33,7 +33,7 @@ export function countMonthDiff(start: Date, end: Date): number {
 export interface EarlyWarningAlert {
   id: string;
   id_asn: number;
-  type: 'pensiun' | 'pangkat' | 'berkala' | 'kp4';
+  type: 'pensiun' | 'pangkat' | 'berkala' | 'kp4' | 'kontrak';
   message: string;
   subMessage: string;
   monthsLeft: number;
@@ -41,10 +41,13 @@ export interface EarlyWarningAlert {
   asnName: string;
   nip: string;
   puskesmasId: number;
+  statusPegawaiDetail?: string;
 }
 
 /**
  * Multi-Tenant Local Early Warning System logic matcher
+ * Mendeteksi otomatis batas jatuh tempo layanan kepegawaian administratif (TMT)
+ * disesuaikan secara presisi menurut status kepegawaian (PNS, PPPK Penuh Waktu, PPPK Paruh Waktu, dan Non-ASN / PKWT)
  */
 export function getEarlyWarningAlerts(asnList: ASNProfile[], referenceDate: Date = new Date()): EarlyWarningAlert[] {
   const alerts: EarlyWarningAlert[] = [];
@@ -53,68 +56,115 @@ export function getEarlyWarningAlerts(asnList: ASNProfile[], referenceDate: Date
   asnList.forEach(asn => {
     if (asn.status_kepegawaian !== 'Aktif') return;
 
-    // 1. PENSIUN (BUP is 58 years for common civil service / clinical Jafung in primary clinics)
-    const birthDate = new Date(asn.tanggal_lahir);
-    const targetPensiun = new Date(birthDate.getFullYear() + 58, birthDate.getMonth(), birthDate.getDate());
-    const mPensiun = countMonthDiff(refDate, targetPensiun);
+    const statusDetail = asn.status_pegawai_detail || 'PNS';
+    const isPns = statusDetail === 'PNS';
+    const isPppk = statusDetail === 'PPPK_Penuh_Waktu' || statusDetail === 'PPPK_Paruh_Waktu';
+    const isNonAsn = statusDetail === 'Non_ASN';
 
-    if (mPensiun > 0 && mPensiun <= 6) {
-      alerts.push({
-        id: `pensiun-${asn.id}`,
-        id_asn: asn.id,
-        type: 'pensiun',
-        message: `Masa Pensiun Mendekati (BUP 58 Tahun)`,
-        subMessage: `${Math.round(mPensiun * 10) / 10} bulan tersisa sebelum TMT pensiun (${formatDate(targetPensiun.toISOString().split('T')[0])})`,
-        monthsLeft: mPensiun,
-        targetDateStr: targetPensiun.toISOString().split('T')[0],
-        asnName: asn.nama_lengkap + (asn.gelar_belakang ? `, ${asn.gelar_belakang}` : ''),
-        nip: asn.nip,
-        puskesmasId: asn.id_puskesmas
-      });
+    // 1. PENSIUN & BATAS USIA PENSIUN (BUP) - KHUSUS PNS & PPPK
+    // PNS & PPPK: BUP 58 Tahun (Umum / Jafung Pertama-Muda), 60 Tahun (Jafung Madya), 65 Tahun (Utama)
+    // Non-ASN TIDAK memiliki BUP pensiun melainkan Akhir Masa Kontrak Kerja (lihat poin 5)
+    if (!isNonAsn) {
+      let birthDate: Date | null = null;
+      if (asn.tanggal_lahir) {
+        const d = new Date(asn.tanggal_lahir);
+        if (!isNaN(d.getTime())) birthDate = d;
+      }
+      if (!birthDate && asn.nip && asn.nip.length >= 8) {
+        const y = parseInt(asn.nip.slice(0, 4), 10);
+        const m = parseInt(asn.nip.slice(4, 6), 10) - 1;
+        const d = parseInt(asn.nip.slice(6, 8), 10);
+        const calculated = new Date(y, m, d);
+        if (!isNaN(calculated.getTime())) birthDate = calculated;
+      }
+
+      if (birthDate) {
+        const isMadya = (asn.jenjang_jafung && asn.jenjang_jafung.toLowerCase().includes('madya')) || false;
+        const isUtama = (asn.jenjang_jafung && asn.jenjang_jafung.toLowerCase().includes('utama')) || false;
+        const bupAge = isUtama ? 65 : isMadya ? 60 : 58;
+
+        const targetPensiun = new Date(birthDate.getFullYear() + bupAge, birthDate.getMonth() + 1, 1);
+        const mPensiun = countMonthDiff(refDate, targetPensiun);
+
+        if (mPensiun > 0 && mPensiun <= 6) {
+          alerts.push({
+            id: `pensiun-${asn.id}`,
+            id_asn: asn.id,
+            type: 'pensiun',
+            message: `Masa Pensiun Mendekati (BUP ${bupAge} Tahun - ${isPns ? 'PNS' : 'PPPK'})`,
+            subMessage: `${Math.round(mPensiun * 10) / 10} bulan tersisa sebelum TMT pensiun (${formatDate(targetPensiun.toISOString().split('T')[0])})`,
+            monthsLeft: mPensiun,
+            targetDateStr: targetPensiun.toISOString().split('T')[0],
+            asnName: asn.nama_lengkap + (asn.gelar_belakang ? `, ${asn.gelar_belakang}` : ''),
+            nip: asn.nip,
+            puskesmasId: asn.id_puskesmas,
+            statusPegawaiDetail: statusDetail
+          });
+        }
+      }
     }
 
-    // 2. KENAIKAN PANGKAT (Period is every 4 years)
-    const pangkatDate = new Date(asn.tmt_pangkat_terakhir);
-    const targetPangkat = new Date(pangkatDate.getFullYear() + 4, pangkatDate.getMonth(), pangkatDate.getDate());
-    const mPangkat = countMonthDiff(refDate, targetPangkat);
+    // 2. KENAIKAN PANGKAT (Siklus 4 Tahun / 6 Periode BKN) - HANYA BERLAKU UNTUK PNS
+    // PPPK dan Non-ASN tidak mengenal kenaikan pangkat/golongan reguler PNS
+    if (isPns && asn.tmt_pangkat_terakhir) {
+      const pangkatDate = new Date(asn.tmt_pangkat_terakhir);
+      if (!isNaN(pangkatDate.getTime())) {
+        const targetPangkat = new Date(pangkatDate.getFullYear() + 4, pangkatDate.getMonth(), pangkatDate.getDate());
+        const mPangkat = countMonthDiff(refDate, targetPangkat);
 
-    if (mPangkat > 0 && mPangkat <= 4) {
-      alerts.push({
-        id: `pangkat-${asn.id}`,
-        id_asn: asn.id,
-        type: 'pangkat',
-        message: `Kenaikan Pangkat Berkala (Siklus 4 Tahun)`,
-        subMessage: `${Math.round(mPangkat * 10) / 10} bulan tersisa sebelum TMT pangkat baru (${formatDate(targetPangkat.toISOString().split('T')[0])})`,
-        monthsLeft: mPangkat,
-        targetDateStr: targetPangkat.toISOString().split('T')[0],
-        asnName: asn.nama_lengkap + (asn.gelar_belakang ? `, ${asn.gelar_belakang}` : ''),
-        nip: asn.nip,
-        puskesmasId: asn.id_puskesmas
-      });
+        if (mPangkat > 0 && mPangkat <= 4) {
+          alerts.push({
+            id: `pangkat-${asn.id}`,
+            id_asn: asn.id,
+            type: 'pangkat',
+            message: `Kenaikan Pangkat Berkala (PNS - Siklus 4 Tahun)`,
+            subMessage: `${Math.round(mPangkat * 10) / 10} bulan tersisa sebelum TMT pangkat baru (${formatDate(targetPangkat.toISOString().split('T')[0])})`,
+            monthsLeft: mPangkat,
+            targetDateStr: targetPangkat.toISOString().split('T')[0],
+            asnName: asn.nama_lengkap + (asn.gelar_belakang ? `, ${asn.gelar_belakang}` : ''),
+            nip: asn.nip,
+            puskesmasId: asn.id_puskesmas,
+            statusPegawaiDetail: statusDetail
+          });
+        }
+      }
     }
 
-    // 3. GAJI BERKALA (Period is every 2 years)
-    const berkalaDate = new Date(asn.tmt_berkala_terakhir);
-    const targetBerkala = new Date(berkalaDate.getFullYear() + 2, berkalaDate.getMonth(), berkalaDate.getDate());
-    const mBerkala = countMonthDiff(refDate, targetBerkala);
+    // 3. KENAIKAN GAJI BERKALA (KGB - Siklus 2 Tahun)
+    // Sesuai PP No. 7 Tahun 1977 dan PermenPAN-RB No. 7 Tahun 2023:
+    // KGB HANYA BERLAKU UNTUK ASN (PNS, PPPK Penuh Waktu, PPPK Paruh Waktu).
+    // Non-ASN (PKWT / Tenaga Kontrak) TIDAK berhak atas KGB (haknya berupa evaluasi/perpanjangan kontrak kerja tahunan).
+    if (!isNonAsn) {
+      const lastBerkalaStr = asn.tmt_berkala_terakhir || asn.tmt_pangkat_terakhir || (isPppk ? asn.pppk_tmt_golongan : undefined);
+      if (lastBerkalaStr) {
+        const berkalaDate = new Date(lastBerkalaStr);
+        if (!isNaN(berkalaDate.getTime())) {
+          const targetBerkala = new Date(berkalaDate.getFullYear() + 2, berkalaDate.getMonth(), berkalaDate.getDate());
+          const mBerkala = countMonthDiff(refDate, targetBerkala);
 
-    if (mBerkala > 0 && mBerkala <= 2) {
-      alerts.push({
-        id: `berkala-${asn.id}`,
-        id_asn: asn.id,
-        type: 'berkala',
-        message: `Kenaikan Gaji Berkala (KGB - Siklus 2 Tahun)`,
-        subMessage: `${Math.round(mBerkala * 10) / 10} bulan tersisa sebelum TMT berkala baru (${formatDate(targetBerkala.toISOString().split('T')[0])})`,
-        monthsLeft: mBerkala,
-        targetDateStr: targetBerkala.toISOString().split('T')[0],
-        asnName: asn.nama_lengkap + (asn.gelar_belakang ? `, ${asn.gelar_belakang}` : ''),
-        nip: asn.nip,
-        puskesmasId: asn.id_puskesmas
-      });
+          if (mBerkala > 0 && mBerkala <= 2) {
+            alerts.push({
+              id: `berkala-${asn.id}`,
+              id_asn: asn.id,
+              type: 'berkala',
+              message: `Kenaikan Gaji Berkala (KGB ${isPns ? 'PNS' : 'PPPK'} - Siklus 2 Tahun)`,
+              subMessage: `${Math.round(mBerkala * 10) / 10} bulan tersisa sebelum TMT berkala baru (${formatDate(targetBerkala.toISOString().split('T')[0])})`,
+              monthsLeft: mBerkala,
+              targetDateStr: targetBerkala.toISOString().split('T')[0],
+              asnName: asn.nama_lengkap + (asn.gelar_belakang ? `, ${asn.gelar_belakang}` : ''),
+              nip: asn.nip,
+              puskesmasId: asn.id_puskesmas,
+              statusPegawaiDetail: statusDetail
+            });
+          }
+        }
+      }
     }
 
-    // 4. KP4 / MODEL DK (Annual Family Allowance Validation update for current year)
-    if (asn.status_pegawai_detail && asn.status_pegawai_detail !== 'Non_ASN') {
+    // 4. KP4 / MODEL DK (Daftar Susunan Keluarga Tunjangan Suami/Istri & Anak)
+    // Berlaku untuk seluruh ASN Penggajian (PNS, PPPK Penuh Waktu, PPPK Paruh Waktu)
+    // Non-ASN TIDAK menggunakan formulir KP4 Model DK tunjangan gaji negara BKN.
+    if (!isNonAsn) {
       const currentYear = refDate.getFullYear();
       if (!asn.kp4_tahun_validasi || asn.kp4_tahun_validasi < currentYear) {
         alerts.push({
@@ -127,8 +177,57 @@ export function getEarlyWarningAlerts(asnList: ASNProfile[], referenceDate: Date
           targetDateStr: `${currentYear}-12-31`,
           asnName: asn.nama_lengkap + (asn.gelar_belakang ? `, ${asn.gelar_belakang}` : ''),
           nip: asn.nip,
-          puskesmasId: asn.id_puskesmas
+          puskesmasId: asn.id_puskesmas,
+          statusPegawaiDetail: statusDetail
         });
+      }
+    }
+
+    // 5. BATAS JATUH TEMPO KONTRAK KERJA / PERJANJIAN (PPPK & Non-ASN / PKWT)
+    // - PPPK: Berdasarkan akhir masa perjanjian kerja (pppk_tmt_perjanjian_selesai)
+    // - Non-ASN (PKWT): Berdasarkan batas kontrak tahunan (pkwt_tgl_sk_kontrak / 31 Desember)
+    if (isPppk || isNonAsn) {
+      let targetKontrak: Date | null = null;
+      let labelKontrak = '';
+
+      if (isPppk) {
+        if (asn.pppk_tmt_perjanjian_selesai) {
+          const d = new Date(asn.pppk_tmt_perjanjian_selesai);
+          if (!isNaN(d.getTime())) targetKontrak = d;
+        } else if (asn.pppk_tmt_perjanjian_mulai) {
+          const mulai = new Date(asn.pppk_tmt_perjanjian_mulai);
+          if (!isNaN(mulai.getTime())) targetKontrak = new Date(mulai.getFullYear() + 5, mulai.getMonth(), mulai.getDate());
+        }
+        labelKontrak = `Batas Akhir Perjanjian Kerja PPPK (${statusDetail === 'PPPK_Paruh_Waktu' ? 'Paruh Waktu' : 'Penuh Waktu'})`;
+      } else if (isNonAsn) {
+        if (asn.pkwt_tgl_sk_kontrak) {
+          const tglSk = new Date(asn.pkwt_tgl_sk_kontrak);
+          if (!isNaN(tglSk.getTime())) targetKontrak = new Date(tglSk.getFullYear(), 11, 31);
+        }
+        if (!targetKontrak) {
+          targetKontrak = new Date(refDate.getFullYear(), 11, 31);
+        }
+        labelKontrak = `Batas Akhir Kontrak Kerja Non-ASN / PKWT (${asn.pkwt_pembiayaan || 'BLUD'})`;
+      }
+
+      if (targetKontrak) {
+        const mKontrak = countMonthDiff(refDate, targetKontrak);
+        // Alert jika dalam 2 bulan sebelum kontrak berakhir atau sudah lewat tempo
+        if (mKontrak > 0 && mKontrak <= 2) {
+          alerts.push({
+            id: `kontrak-${asn.id}`,
+            id_asn: asn.id,
+            type: 'kontrak',
+            message: labelKontrak,
+            subMessage: `${Math.round(mKontrak * 10) / 10} bulan tersisa sebelum masa kontrak berakhir (${formatDate(targetKontrak.toISOString().split('T')[0])})`,
+            monthsLeft: mKontrak,
+            targetDateStr: targetKontrak.toISOString().split('T')[0],
+            asnName: asn.nama_lengkap + (asn.gelar_belakang ? `, ${asn.gelar_belakang}` : ''),
+            nip: asn.nik || asn.nip,
+            puskesmasId: asn.id_puskesmas,
+            statusPegawaiDetail: statusDetail
+          });
+        }
       }
     }
   });
