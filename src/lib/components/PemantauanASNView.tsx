@@ -23,7 +23,9 @@ import {
   Check,
   Send,
   ExternalLink,
-  Info
+  Info,
+  Calculator,
+  Plus
 } from 'lucide-react';
 import { ASNProfile, Puskesmas } from '../../types';
 import { formatDate, sendWhatsAppMessage, normalizeIndonesianPhoneNumber } from '../../utils';
@@ -119,6 +121,50 @@ const getBirthDateFromProfile = (asn: ASNProfile): Date => {
   return new Date(1985, 0, 1);
 };
 
+const TARGET_AK_GOLONGAN: Record<string, number> = {
+  "II/a": 20,
+  "II/b": 20,
+  "II/c": 20,
+  "II/d": 20,
+  "III/a": 50,
+  "III/b": 50,
+  "III/c": 100,
+  "III/d": 100,
+  "IV/a": 150,
+  "IV/b": 150,
+  "IV/c": 150,
+  "IV/d": 200,
+  "IV/e": 200
+};
+
+const TARGET_AK_JENJANG: Record<string, number> = {
+  "Terampil": 20,
+  "Mahir": 50,
+  "Penyelia": 100,
+  "Ahli Pertama": 50,
+  "Ahli Muda": 100,
+  "Ahli Madya": 150,
+  "Ahli Utama": 200
+};
+
+const KOEFISIEN_TAHUNAN_JAFUNG: Record<string, number> = {
+  "Terampil": 5.0,
+  "Mahir": 12.5,
+  "Penyelia": 25.0,
+  "Ahli Pertama": 12.5,
+  "Ahli Muda": 25.0,
+  "Ahli Madya": 37.5,
+  "Ahli Utama": 50.0
+};
+
+const MULTIPLIER_PREDIKAT_SKP: Record<string, number> = {
+  "Sangat Baik": 1.5,
+  "Baik": 1.0,
+  "Butuh Perbaikan": 0.75,
+  "Kurang": 0.5,
+  "Sangat Kurang": 0.0
+};
+
 export default function PemantauanASNView({
   currentRole,
   selectedPuskesmasId,
@@ -141,6 +187,7 @@ export default function PemantauanASNView({
   
   // Selected ASN for Update Modal
   const [editingItem, setEditingItem] = useState<any | null>(null);
+  const [calcPredikat, setCalcPredikat] = useState<'Sangat Baik' | 'Baik' | 'Butuh Perbaikan' | 'Kurang' | 'Sangat Kurang'>('Baik');
   
   // Selected ASN for SK Preview Modal
   const [skPreviewItem, setSkPreviewItem] = useState<any | null>(null);
@@ -262,18 +309,20 @@ export default function PemantauanASNView({
           syarat_khusus: syaratKhusus,
           syarat_badge_type: syaratBadgeType,
           jabatan_nama: asn.pns_nama_jabatan || (isFungsional ? `Fungsional (${asn.jenjang_jafung || 'Tenaga Kesehatan'})` : 'Staf Pelaksana'),
-          nomor_wa: asn.nomor_wa
+          nomor_wa: asn.nomor_wa,
+          ak_terakhir: asn.ak_integrasi_2022 || 0
         };
       });
   }, [scopedProfiles, today, puskesmasList]);
 
   // =========================================================================
-  // 2. DATA PEMANTAUAN: JABATAN FUNGSIONAL (JAFUNG)
-  // Aturan PermenPAN-RB No. 1 Tahun 2023: Angka Kredit Konversi SKP & Uji Kompetensi Kemenkes
+  // 2. DATA PEMANTAUAN: JABATAN FUNGSIONAL (KHUSUS PNS JAFUNG KESEHATAN)
+  // Aturan PermenPAN-RB No. 1 Tahun 2023 & BKN: Kenaikan Jenjang Jabatan Fungsional
+  // PPPK & Non-ASN dieksklusi dari kenaikan jenjang promosi jafung PNS
   // =========================================================================
   const jafungList = useMemo(() => {
     return scopedProfiles
-      .filter(asn => asn.jenis_pegawai === 'Jafung_Kesehatan' || Boolean(asn.jenjang_jafung) || (asn.pns_jenis_jabatan && asn.pns_jenis_jabatan.toLowerCase().includes('fungsional')))
+      .filter(asn => asn.status_pegawai_detail === 'PNS' && (asn.jenis_pegawai === 'Jafung_Kesehatan' || Boolean(asn.jenjang_jafung) || (asn.pns_jenis_jabatan && asn.pns_jenis_jabatan.toLowerCase().includes('fungsional'))))
       .map(asn => {
         const lastTmtJabatanStr = asn.tmt_jabatan_terakhir || asn.tmt_pangkat_terakhir || '2022-01-01';
         const lastTmtJabatan = parseDateSafe(lastTmtJabatanStr) || new Date(2022, 0, 1);
@@ -589,6 +638,7 @@ export default function PemantauanASNView({
             tmt_jabatan_terakhir: editingItem.tmt_jabatan_terakhir || p.tmt_jabatan_terakhir,
             jenjang_jafung: editingItem.jenjang_jafung || p.jenjang_jafung,
             pns_nama_jabatan: editingItem.pns_nama_jabatan || p.pns_nama_jabatan,
+            ak_integrasi_2022: editingItem.ak_integrasi_2022 !== undefined ? Number(editingItem.ak_integrasi_2022) : p.ak_integrasi_2022,
             tanggal_lahir: editingItem.tanggal_lahir || p.tanggal_lahir,
             pppk_tmt_perjanjian_selesai: editingItem.pppk_tmt_perjanjian_selesai || p.pppk_tmt_perjanjian_selesai,
             pkwt_tgl_sk_kontrak: editingItem.pkwt_tgl_sk_kontrak || p.pkwt_tgl_sk_kontrak,
@@ -1119,6 +1169,97 @@ export default function PemantauanASNView({
                       className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-600"
                     />
                   </div>
+
+                  {/* Kalkulator Angka Kredit Kenaikan Pangkat (PermenPAN-RB No. 1/2023) */}
+                  <div className="p-3 bg-gradient-to-br from-teal-50 to-emerald-50/50 border border-teal-200 rounded-xl space-y-2.5">
+                    <div className="flex items-center justify-between border-b border-teal-200/60 pb-1.5">
+                      <div className="flex items-center space-x-1.5 text-teal-900 font-bold text-xs">
+                        <Calculator size={15} className="text-teal-700" />
+                        <span>Kalkulator Angka Kredit Kenaikan Pangkat (PermenPAN-RB 1/2023)</span>
+                      </div>
+                      <span className="text-[10px] bg-teal-200/70 text-teal-900 font-extrabold px-2 py-0.5 rounded-full font-mono">
+                        Target AK: {TARGET_AK_GOLONGAN[editingItem.golongan_ruang] || 50}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                          Angka Kredit Kumulatif Saat Ini
+                        </label>
+                        <input
+                          type="number"
+                          step="0.001"
+                          value={editingItem.ak_integrasi_2022 !== undefined ? editingItem.ak_integrasi_2022 : 0}
+                          onChange={(e) => setEditingItem({ ...editingItem, ak_integrasi_2022: parseFloat(e.target.value) || 0 })}
+                          placeholder="0"
+                          className="w-full px-3 py-2 bg-white border border-teal-300 rounded-lg text-xs font-bold text-teal-950 focus:outline-none focus:ring-2 focus:ring-teal-600 shadow-2xs"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                          Predikat Evaluasi SKP Tahunan
+                        </label>
+                        <select
+                          value={calcPredikat}
+                          onChange={(e) => setCalcPredikat(e.target.value as any)}
+                          className="w-full px-3 py-2 bg-white border border-teal-300 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-600 shadow-2xs"
+                        >
+                          <option value="Sangat Baik">Sangat Baik (150%)</option>
+                          <option value="Baik">Baik (100% - Normal)</option>
+                          <option value="Butuh Perbaikan">Butuh Perbaikan (75%)</option>
+                          <option value="Kurang">Kurang (50%)</option>
+                          <option value="Sangat Kurang">Sangat Kurang (0%)</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Hasil Perhitungan Kenaikan Pangkat */}
+                    {(() => {
+                      const jenjangPns = editingItem.jenjang_jafung || 'Ahli Pertama';
+                      const koefTahunan = KOEFISIEN_TAHUNAN_JAFUNG[jenjangPns] || 12.5;
+                      const multiplier = MULTIPLIER_PREDIKAT_SKP[calcPredikat] ?? 1.0;
+                      const konversiTahunan = koefTahunan * multiplier;
+                      const currentAk = parseFloat(editingItem.ak_integrasi_2022) || 0;
+                      const targetAk = TARGET_AK_GOLONGAN[editingItem.golongan_ruang] || 50;
+                      const sisaAk = Math.max(0, targetAk - currentAk);
+                      const isLolosPangkat = currentAk >= targetAk;
+
+                      return (
+                        <div className="bg-white/90 border border-teal-200 rounded-lg p-2.5 space-y-1.5 text-xs text-slate-700">
+                          <div className="flex justify-between items-center text-[11px]">
+                            <span>Laju Konversi Tahunan (Koefisien x SKP):</span>
+                            <span className="font-bold text-teal-800 font-mono">+{konversiTahunan.toFixed(2)} AK / tahun</span>
+                          </div>
+                          <div className="flex justify-between items-center text-[11px]">
+                            <span>Status Pemenuhan Kenaikan Pangkat:</span>
+                            {isLolosPangkat ? (
+                              <span className="font-extrabold text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded flex items-center space-x-1">
+                                <CheckCircle size={12} />
+                                <span>MEMENUHI SYARAT AK</span>
+                              </span>
+                            ) : (
+                              <span className="font-bold text-amber-700 bg-amber-100/80 px-2 py-0.5 rounded">
+                                Kurang {sisaAk.toFixed(2)} AK (± {Math.ceil(sisaAk / (konversiTahunan || 1))} tahun)
+                              </span>
+                            )}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const nextAk = Math.round((currentAk + konversiTahunan) * 100) / 100;
+                              setEditingItem({ ...editingItem, ak_integrasi_2022: nextAk });
+                            }}
+                            className="w-full mt-1 py-1.5 bg-teal-700 hover:bg-teal-800 text-white rounded-md text-[11px] font-bold transition flex items-center justify-center space-x-1 cursor-pointer"
+                          >
+                            <Plus size={13} />
+                            <span>Simulasi Tambah +{konversiTahunan.toFixed(2)} AK Hasil SKP Tahunan</span>
+                          </button>
+                        </div>
+                      );
+                    })()}
+                  </div>
                 </>
               )}
 
@@ -1165,6 +1306,102 @@ export default function PemantauanASNView({
                       placeholder="Contoh: Perawat Ahli Madya / Bidan Ahli Pertama"
                       className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-600"
                     />
+                  </div>
+
+                  {/* Kalkulator Angka Kredit Kenaikan Jenjang Jabatan (PermenPAN-RB No. 1/2023) */}
+                  <div className="p-3 bg-gradient-to-br from-indigo-50 to-blue-50/50 border border-indigo-200 rounded-xl space-y-2.5">
+                    <div className="flex items-center justify-between border-b border-indigo-200/60 pb-1.5">
+                      <div className="flex items-center space-x-1.5 text-indigo-950 font-bold text-xs">
+                        <Calculator size={15} className="text-indigo-700" />
+                        <span>Kalkulator Kenaikan Jenjang Jabatan (PermenPAN-RB 1/2023)</span>
+                      </div>
+                      <span className="text-[10px] bg-indigo-200/80 text-indigo-950 font-extrabold px-2 py-0.5 rounded-full font-mono">
+                        Target AK: {TARGET_AK_JENJANG[editingItem.jenjang_jafung || 'Ahli Pertama'] || 100}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                          Angka Kredit Terakhir Pegawai
+                        </label>
+                        <input
+                          type="number"
+                          step="0.001"
+                          value={editingItem.ak_integrasi_2022 !== undefined ? editingItem.ak_integrasi_2022 : 0}
+                          onChange={(e) => setEditingItem({ ...editingItem, ak_integrasi_2022: parseFloat(e.target.value) || 0 })}
+                          placeholder="0"
+                          className="w-full px-3 py-2 bg-white border border-indigo-300 rounded-lg text-xs font-bold text-indigo-950 focus:outline-none focus:ring-2 focus:ring-indigo-600 shadow-2xs"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                          Predikat Evaluasi SKP Tahunan
+                        </label>
+                        <select
+                          value={calcPredikat}
+                          onChange={(e) => setCalcPredikat(e.target.value as any)}
+                          className="w-full px-3 py-2 bg-white border border-indigo-300 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-600 shadow-2xs"
+                        >
+                          <option value="Sangat Baik">Sangat Baik (150%)</option>
+                          <option value="Baik">Baik (100% - Normal)</option>
+                          <option value="Butuh Perbaikan">Butuh Perbaikan (75%)</option>
+                          <option value="Kurang">Kurang (50%)</option>
+                          <option value="Sangat Kurang">Sangat Kurang (0%)</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Hasil Perhitungan Kenaikan Jenjang */}
+                    {(() => {
+                      const jenjangSekarang = editingItem.jenjang_jafung || 'Ahli Pertama';
+                      const jenjangBerikutnya = getNextJenjangJafung(jenjangSekarang);
+                      const koefTahunan = KOEFISIEN_TAHUNAN_JAFUNG[jenjangSekarang] || 12.5;
+                      const multiplier = MULTIPLIER_PREDIKAT_SKP[calcPredikat] ?? 1.0;
+                      const konversiTahunan = koefTahunan * multiplier;
+                      const currentAk = parseFloat(editingItem.ak_integrasi_2022) || 0;
+                      const targetAk = TARGET_AK_JENJANG[jenjangSekarang] || 100;
+                      const sisaAk = Math.max(0, targetAk - currentAk);
+                      const isLolosJenjang = currentAk >= targetAk;
+
+                      return (
+                        <div className="bg-white/90 border border-indigo-200 rounded-lg p-2.5 space-y-1.5 text-xs text-slate-700">
+                          <div className="flex justify-between items-center text-[11px]">
+                            <span>Proyeksi Kenaikan:</span>
+                            <span className="font-bold text-indigo-900 font-sans">{jenjangSekarang} ➔ {jenjangBerikutnya}</span>
+                          </div>
+                          <div className="flex justify-between items-center text-[11px]">
+                            <span>Laju Konversi Tahunan (Koefisien x SKP):</span>
+                            <span className="font-bold text-indigo-800 font-mono">+{konversiTahunan.toFixed(2)} AK / tahun</span>
+                          </div>
+                          <div className="flex justify-between items-center text-[11px]">
+                            <span>Status Pemenuhan Angka Kredit:</span>
+                            {isLolosJenjang ? (
+                              <span className="font-extrabold text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded flex items-center space-x-1">
+                                <CheckCircle size={12} />
+                                <span>SIAP UJI KOMPETENSI (UKOM)</span>
+                              </span>
+                            ) : (
+                              <span className="font-bold text-rose-700 bg-rose-100/80 px-2 py-0.5 rounded">
+                                Kurang {sisaAk.toFixed(2)} AK (± {Math.ceil(sisaAk / (konversiTahunan || 1))} tahun lagi)
+                              </span>
+                            )}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const nextAk = Math.round((currentAk + konversiTahunan) * 100) / 100;
+                              setEditingItem({ ...editingItem, ak_integrasi_2022: nextAk });
+                            }}
+                            className="w-full mt-1 py-1.5 bg-indigo-700 hover:bg-indigo-800 text-white rounded-md text-[11px] font-bold transition flex items-center justify-center space-x-1 cursor-pointer"
+                          >
+                            <Plus size={13} />
+                            <span>Simulasi Tambah +{konversiTahunan.toFixed(2)} AK Hasil SKP Tahunan</span>
+                          </button>
+                        </div>
+                      );
+                    })()}
                   </div>
                 </>
               )}
