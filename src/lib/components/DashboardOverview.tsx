@@ -638,6 +638,13 @@ export default function DashboardOverview({
         '- Salinan Kartu Keluarga (KK) Terbaru',
         '- Salinan Surat Nikah dan Akta Kelahiran Anak (Terdaftar Tanggungan Gaji)'
       ];
+    } else if (alertItem.type === 'kontrak') {
+      serviceName = 'Evaluasi & Perpanjangan Kontrak Kerja Pegawai';
+      requiredDocs = [
+        '- Surat Permohonan / Usulan Perpanjangan Kontrak Kerja',
+        '- Salinan SK Kontrak / Perjanjian Kerja Terakhir',
+        '- Penilaian Evaluasi Kinerja Tahunan dari Kepala Puskesmas'
+      ];
     } else {
       serviceName = 'Layanan Kenaikan Gaji Berkala (KGB)';
       requiredDocs = [
@@ -3289,20 +3296,34 @@ Informasi ini dikirim langsung dari Dashboard SAPA pegawai UPT Puskesmas Sedau (
               const isPensiun = alert.type === 'pensiun';
               const isPangkat = alert.type === 'pangkat';
               const isKP4 = alert.type === 'kp4';
+              const isKontrak = alert.type === 'kontrak';
               const pillColor = isPensiun 
                 ? "bg-rose-950/20 text-rose-200 border-rose-500/20" 
                 : isPangkat 
                   ? "bg-amber-950/20 text-amber-200 border-amber-500/20" 
                   : isKP4
                     ? "bg-violet-950/20 text-violet-200 border-violet-500/20"
-                    : "bg-emerald-950/20 text-emerald-200 border-emerald-500/20";
+                    : isKontrak
+                      ? "bg-cyan-950/20 text-cyan-200 border-cyan-500/20"
+                      : "bg-emerald-950/20 text-emerald-200 border-emerald-500/20";
 
               return (
                 <div key={alert.id} className={`flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-xl border ${pillColor} transition-all space-y-4 sm:space-y-0`}>
                   <div className="space-y-1">
                     <div className="flex items-center space-x-2 flex-wrap">
                       <span className="font-black text-sm tracking-tight text-white">{alert.asnName}</span>
-                      <span className="text-slate-405 text-slate-400 text-xs">/ NIP {alert.nip}</span>
+                      <span className="text-slate-405 text-slate-400 text-xs">/ {alert.statusPegawaiDetail === 'Non_ASN' ? 'NIK' : 'NIP'} {alert.nip}</span>
+                      {alert.statusPegawaiDetail && (
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono ${
+                          alert.statusPegawaiDetail === 'PNS' 
+                            ? 'bg-blue-900/60 text-blue-300 border border-blue-500/30' 
+                            : alert.statusPegawaiDetail.startsWith('PPPK')
+                              ? 'bg-emerald-900/60 text-emerald-300 border border-emerald-500/30'
+                              : 'bg-amber-900/60 text-amber-300 border border-amber-500/30'
+                        }`}>
+                          {alert.statusPegawaiDetail === 'PPPK_Penuh_Waktu' ? 'PPPK Penuh Waktu' : alert.statusPegawaiDetail === 'PPPK_Paruh_Waktu' ? 'PPPK Paruh Waktu' : alert.statusPegawaiDetail === 'Non_ASN' ? 'Non-ASN / PKWT' : 'PNS'}
+                        </span>
+                      )}
                     </div>
                     <p className="font-semibold text-xs text-slate-300 flex items-center space-x-1 mt-1">
                       <AlertCircle size={14} className="inline mr-1 text-slate-400" />
@@ -3331,7 +3352,9 @@ Informasi ini dikirim langsung dari Dashboard SAPA pegawai UPT Puskesmas Sedau (
                             ? 'kenaikan-pangkat' 
                             : alert.type === 'kp4'
                               ? 'gaji-berkala' // KP4 is verified as part of the periodic allowance process
-                              : 'gaji-berkala';
+                              : alert.type === 'kontrak'
+                                ? 'mutasi'
+                                : 'gaji-berkala';
                         onNavigateToService(alert.id_asn, routeSlug);
                       }}
                       className="flex items-center space-x-1 text-xs font-bold px-3 py-1.5 rounded-lg bg-white/10 text-white hover:bg-white/20 border border-white/5 transition cursor-pointer"
