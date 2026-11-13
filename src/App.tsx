@@ -1242,65 +1242,185 @@ export default function App() {
         "NIP (Wajib untuk PNS/PPPK)",
         "NIK (Nomor Induk Kependudukan - Wajib 16 Digit)",
         "Nama Lengkap (Tanpa Gelar)",
-        "Gelar Belakang (Misalnya: amd.kep, s.kep, dr)",
+        "Gelar Belakang (Misalnya: Amd.Kep, S.Kep, Ners, dr., Sp.A)",
         "Jenis Kelamin (L/P)",
         "Status Pegawai (PNS / PPPK Penuh Waktu / PPPK Paruh Waktu / Non ASN)",
         "Rumpun Jabatan (Struktural / Jafung Kesehatan / Staf Umum)",
-        "Rumpun Profesi SDMK (contoh: Perawat, Dokter, Bidan, Apoteker, Umum & Kepeg)",
+        "Rumpun Profesi SDMK (contoh: Perawat, Dokter, Dokter Gigi, Bidan, Apoteker, Umum & Kepeg)",
+        "Nama Jabatan Lengkap (contoh: Perawat Ahli Muda, Tenaga Administrasi Keuangan)",
+        "Jenjang Jafung (Terampil / Mahir / Penyelia / Ahli Pertama / Ahli Muda / Ahli Madya / Ahli Utama)",
+        "Golongan Ruang (contoh: III/a, III/b, Golongan IX, Golongan VII, atau '-' untuk Non-ASN)",
         "Nomor WhatsApp Aktif (contoh: 81234567890)",
-        "Golongan Ruang (contoh: III/a, Golongan IX, dll)",
         "Tanggal Lahir (Format: YYYY-MM-DD)",
-        "Sisa Cuti Tahunan (contoh: 12)",
-        "Nomor STR (Optional untuk Jafung Kesehatan)",
-        "Tanggal Terbit STR (Format: YYYY-MM-DD. Optional)",
-        "Tanggal Akhir STR (Format: YYYY-MM-DD atau Seumur Hidup. Optional)",
-        "Nomor SIP (Optional untuk Jafung Kesehatan)",
-        "Tanggal Terbit SIP (Format: YYYY-MM-DD. Optional)",
-        "Tanggal Akhir SIP (Format: YYYY-MM-DD. Optional)"
+        "TMT Pangkat Terakhir (Format: YYYY-MM-DD)",
+        "TMT Gaji Berkala Terakhir (Format: YYYY-MM-DD)",
+        "TMT Jabatan Terakhir (Format: YYYY-MM-DD)",
+        "Sisa Cuti Tahunan (angka, 0-30)",
+        // PNS Spesifik
+        "PNS: Masa Kerja Golongan (contoh: 04 tahun 02 bulan)",
+        "PNS: Nomor SK Pangkat (contoh: 823.3/012/BKD/2023)",
+        "PNS: Tanggal SK Pangkat (Format: YYYY-MM-DD)",
+        "PNS: No Pertek BKN (contoh: KG-25201000113)",
+        "PNS: Tgl Pertek BKN (Format: YYYY-MM-DD)",
+        "PNS: No SK Jabatan (contoh: 821.16/264/BKD/2022)",
+        "PNS: Tgl SK Jabatan (Format: YYYY-MM-DD)",
+        // PPPK Spesifik
+        "PPPK: Nomor Perjanjian Kerja",
+        "PPPK: Tanggal Perjanjian (Format: YYYY-MM-DD)",
+        "PPPK: TMT Mulai Kontrak (Format: YYYY-MM-DD)",
+        "PPPK: TMT Selesai Kontrak (Format: YYYY-MM-DD)",
+        "PPPK: Nomor SK",
+        "PPPK: Tanggal SK (Format: YYYY-MM-DD)",
+        // PKWT / Non-ASN Spesifik
+        "Non-ASN: Nomor SK Kontrak (contoh: SK-KONTRAK/902/DINKES/2024)",
+        "Non-ASN: Tanggal SK Kontrak (Format: YYYY-MM-DD)",
+        "Non-ASN: TMT Mulai Tugas (Format: YYYY-MM-DD)",
+        "Non-ASN: Masa Kerja (contoh: 2 Tahun 4 Bulan)",
+        "Non-ASN: Sumber Pembiayaan (APBD / BLUD / APBN)",
+        // STR & SIP
+        "Nomor STR (Wajib/Opsional Jafung Kesehatan)",
+        "Tanggal Terbit STR (Format: YYYY-MM-DD)",
+        "Tanggal Akhir STR (Format: YYYY-MM-DD atau Seumur Hidup)",
+        "Nomor SIP (Surat Izin Praktik)",
+        "Tanggal Terbit SIP (Format: YYYY-MM-DD)",
+        "Tanggal Akhir SIP (Format: YYYY-MM-DD)"
       ];
       
       const sampleRows = [
         [
+          // PNS Sample
           "199005122020121004",
           "5201021205900004",
           "Wahyu Darizki",
-          "dr.",
+          "dr., Sp.A",
           "L",
           "PNS",
           "Jafung Kesehatan",
           "Dokter",
+          "Dokter Ahli Muda",
+          "Ahli Muda",
+          "III/c",
           "81234567890",
-          "III/b",
           "1990-05-12",
+          "2023-04-01",
+          "2024-01-01",
+          "2023-04-01",
           "12",
-          "STR-123456",
+          "06 tahun 02 bulan",
+          "823.3/012/BKD/2023",
+          "2023-03-15",
+          "KG-25201000113",
+          "2023-02-28",
+          "821.16/264/BKD/2023",
+          "2023-03-20",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "STR-987654321",
           "2020-05-12",
           "Seumur Hidup",
-          "SIP-654321",
-          "2021-01-15",
-          "2026-01-15"
+          "SIP-012/DPMPTSP/2023",
+          "2023-04-01",
+          "2028-04-01"
         ],
         [
+          // PPPK Penuh Waktu Sample
           "199508152023212009",
           "5201021508950002",
           "Siti Aminah",
-          "Amd.Kep",
+          "S.Kep., Ners",
           "P",
           "PPPK Penuh Waktu",
           "Jafung Kesehatan",
           "Perawat",
-          "81987654321",
+          "Perawat Ahli Pertama",
+          "Ahli Pertama",
           "Golongan IX",
+          "81987654321",
           "1995-08-15",
+          "2023-05-01",
+          "2025-05-01",
+          "2023-05-01",
           "12",
           "",
           "",
           "",
           "",
           "",
-          ""
+          "",
+          "",
+          "800/125/PPPK/BKD/2023",
+          "2023-04-20",
+          "2023-05-01",
+          "2028-04-30",
+          "800/125/BKD/2023",
+          "2023-04-25",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "STR-19950815-2023",
+          "2023-01-10",
+          "Seumur Hidup",
+          "SIP-446/102/Perawat/2023",
+          "2023-05-10",
+          "2028-05-09"
         ],
         [
+          // PPPK Paruh Waktu Sample
+          "199803212024211003",
+          "5201022103980005",
+          "Muhammad Rizal",
+          "Amd.Kes",
+          "L",
+          "PPPK Paruh Waktu",
+          "Jafung Kesehatan",
+          "Sanitarian",
+          "Sanitarian Terampil",
+          "Terampil",
+          "Golongan VII",
+          "87766554433",
+          "1998-03-21",
+          "2024-03-01",
+          "2026-03-01",
+          "2024-03-01",
+          "12",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "800/088/PW/BKD/2024",
+          "2024-02-15",
+          "2024-03-01",
+          "2026-02-28",
+          "800/088/PW/2024",
+          "2024-02-20",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "STR-SAN-98721",
+          "2022-09-15",
+          "Seumur Hidup",
+          "SIP-SAN/009/2024",
+          "2024-03-10",
+          "2029-03-09"
+        ],
+        [
+          // Non-ASN / PKWT Sample
           "",
           "5201020412990001",
           "Slamet Mulyadi",
@@ -1309,10 +1429,33 @@ export default function App() {
           "Non ASN",
           "Staf Umum",
           "Umum & Kepeg",
-          "85338884422",
+          "Pengadministrasi Kepegawaian",
           "-",
+          "-",
+          "85338884422",
           "1999-12-04",
+          "2024-01-02",
+          "2024-01-02",
+          "2024-01-02",
           "0",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "SK-KONTRAK/902/DINKES/2024",
+          "2024-01-02",
+          "2024-01-02",
+          "2 Tahun 0 Bulan",
+          "BLUD",
           "",
           "",
           "",
@@ -1332,35 +1475,43 @@ export default function App() {
       // Panduan Pengisian Sheet
       const guideHeaders = ["KANDUNGAN KOLOM", "ATURAN FORMAT / PILIHAN", "CONTOH VALID"];
       const guideRows = [
-        ["NIP (Nomor Induk Pegawai)", "NIP 18 Digit untuk PNS/PPPK. Kosongkan jika Non-ASN.", "199005122020121004"],
-        ["NIK (Nomor Induk Kependudukan)", "Wajib 16 digit angka kependudukan KTP.", "5201020412990001"],
-        ["Nama Lengkap", "Tulis nama lengkap karyawan tanpa gelar belakang.", "Romi Hidayat"],
-        ["Gelar Belakang", "Tulis gelar akademik / profesi (Dipisah koma jika lebih dari satu).", "S.Kep, Ners"],
-        ["Jenis Kelamin", "Huruf 'L' untuk Laki-Laki, atau 'P' untuk Perempuan.", "L"],
+        ["NIP (Nomor Induk Pegawai)", "Wajib 18 Digit untuk PNS / PPPK. Kosongkan untuk Non-ASN (PKWT).", "199005122020121004"],
+        ["NIK (Nomor Induk Kependudukan)", "Wajib 16 digit angka KTP untuk seluruh kategori pegawai.", "5201020412990001"],
+        ["Nama Lengkap", "Tulis nama lengkap tanpa gelar.", "Wahyu Darizki"],
+        ["Gelar Belakang", "Tulis gelar akademik / profesi.", "S.Kep, Ners / dr., Sp.A"],
+        ["Jenis Kelamin", "Pilihan: L (Laki-Laki) atau P (Perempuan).", "L atau P"],
         ["Status Pegawai", "PILIHAN VALID: PNS / PPPK Penuh Waktu / PPPK Paruh Waktu / Non ASN", "PNS / PPPK Penuh Waktu"],
         ["Rumpun Jabatan", "PILIHAN VALID: Struktural / Jafung Kesehatan / Staf Umum", "Jafung Kesehatan"],
-        ["Rumpun Profesi SDMK", "PILIHAN VALID: Perawat / Dokter / Dokter Gigi / Bidan / Apoteker / Tenaga Teknik Kefarmasian / Promkes & Ilmu Perilaku / Sanitarian / Nutrisionis / Ahli Teknologi Lab Medik / Rekam Medis / Terapis Gigi & Mulut / Umum & Kepeg / Tenaga Adm. Keuangan / Tenaga Sistem Informasi Kes.", "Dokter"],
-        ["Nomor WhatsApp Aktif", "Nomor ponsel aktif WA (angka saja tanpa lambang + , contoh: 81234567890).", "81234567890"],
-        ["Golongan Ruang", "PNS: III/a, III/b, IV/a. PPPK: Golongan IX, Golongan VII. Non-ASN: isi '-' saja.", "III/b"],
-        ["Tanggal Lahir", "Harus berformat YYYY-MM-DD (Tahun-Bulan-Tanggal) sesuai standar.", "1992-06-25"],
-        ["Sisa Cuti Tahunan", "Isi angka sisa cuti (0 s/d 30). Pegawai Non ASN wajib diisi 0.", "12"],
-        ["Nomor STR", "Nomor Surat Tanda Registrasi jika ada (Opsional).", "STR-987654"],
-        ["Tanggal Terbit STR", "Format YYYY-MM-DD jika ada STR.", "2021-03-22"],
-        ["Tanggal Akhir STR", "Format YYYY-MM-DD atau 'Seumur Hidup' jika ada STR.", "Seumur Hidup"],
-        ["Nomor SIP", "Nomor Surat Izin Praktik jika ada (Opsional).", "SIP-123/2026"],
-        ["Tanggal Terbit SIP", "Format YYYY-MM-DD jika ada SIP.", "2021-04-12"],
-        ["Tanggal Akhir SIP", "Format YYYY-MM-DD jika ada SIP.", "2026-04-12"]
+        ["Rumpun Profesi SDMK", "PILIHAN: Perawat / Dokter / Dokter Gigi / Bidan / Apoteker / Tenaga Teknik Kefarmasian / Promkes & Ilmu Perilaku / Sanitarian / Nutrisionis / Ahli Teknologi Lab Medik / Rekam Medis / Terapis Gigi & Mulut / Umum & Kepeg / Tenaga Adm. Keuangan / Tenaga Sistem Informasi Kes.", "Perawat"],
+        ["Nama Jabatan Lengkap", "Nama jabatan spesifik sesuai SK / Perjanjian kerja.", "Perawat Ahli Pertama"],
+        ["Jenjang Jafung", "Pilihan Jafung: Terampil / Mahir / Penyelia / Ahli Pertama / Ahli Muda / Ahli Madya / Ahli Utama. (Isi '-' jika bukan Jafung).", "Ahli Pertama"],
+        ["Golongan Ruang", "PNS: III/a, III/b, IV/a, dll. PPPK: Golongan IX, Golongan VII, dll. Non-ASN: isi '-'.", "III/a / Golongan IX"],
+        ["Nomor WhatsApp Aktif", "Nomor WA aktif tanpa tanda '+' (contoh: 81234567890).", "81234567890"],
+        ["Tanggal Lahir", "Format tanggal: YYYY-MM-DD", "1992-06-25"],
+        ["TMT Pangkat Terakhir", "TMT Kenaikan Pangkat/Golongan terakhir (Format: YYYY-MM-DD).", "2023-04-01"],
+        ["TMT Gaji Berkala Terakhir", "TMT Kenaikan Gaji Berkala (KGB) terakhir (Format: YYYY-MM-DD).", "2024-01-01"],
+        ["TMT Jabatan Terakhir", "TMT Pelantikan/Pengangkatan Jabatan terakhir (Format: YYYY-MM-DD).", "2023-04-01"],
+        ["Sisa Cuti Tahunan", "Isi angka hak sisa cuti (0 s/d 30). Non-ASN isi 0.", "12"],
+        ["PNS: Masa Kerja Golongan", "Masa kerja golongan sesuai SK Pangkat terakhir.", "04 tahun 02 bulan"],
+        ["PNS: Nomor & Tgl SK Pangkat", "Nomor dan Tanggal SK Pangkat terakhir PNS.", "823.3/012/BKD/2023 | 2023-03-15"],
+        ["PNS: No & Tgl Pertek BKN", "Pertimbangan Teknis BKN untuk kenaikan pangkat.", "KG-25201000113 | 2023-02-28"],
+        ["PNS: No & Tgl SK Jabatan", "SK Pengangkatan dalam Jabatan Struktural/Fungsional.", "821.16/264/BKD/2022 | 2022-04-01"],
+        ["PPPK: Perjanjian Kerja & TMT", "Nomor Perjanjian, Tgl Perjanjian, TMT Mulai & Selesai Kontrak.", "800/125/BKD/2023 | 2023-05-01 s/d 2028-04-30"],
+        ["PPPK: No & Tgl SK", "Nomor dan Tanggal SK Pengangkatan PPPK.", "800/125/BKD/2023 | 2023-04-25"],
+        ["Non-ASN: SK & Masa Kerja", "Nomor SK, Tgl SK, TMT Tugas, Masa Kerja, dan Sumber Pembiayaan (APBD/BLUD/APBN).", "SK-KONTRAK/902/DINKES/2024 | BLUD"],
+        ["STR (Surat Tanda Registrasi)", "Nomor STR, Tgl Terbit (YYYY-MM-DD), Tgl Akhir (YYYY-MM-DD atau 'Seumur Hidup').", "STR-123456 | Seumur Hidup"],
+        ["SIP (Surat Izin Praktik)", "Nomor SIP, Tgl Terbit (YYYY-MM-DD), dan Tgl Akhir Masa Berlaku SIP (YYYY-MM-DD).", "SIP-012/DPMPTSP/2023 | 2028-04-01"]
       ];
 
-      const wsGuide = XLSX.utils.aoa_to_sheet([["PANDUAN ALUR IMPORT DATA PEGAWAI - SAPA PEGAWAI UPT PUSKESMAS SEDAU"], [], ...[guideHeaders, ...guideRows]]);
-      wsGuide['!cols'] = [{ wch: 30 }, { wch: 65 }, { wch: 25 }];
+      const wsGuide = XLSX.utils.aoa_to_sheet([["PANDUAN LENGKAP TEMPLATE IMPOR DATA PEGAWAI (PNS, PPPK, NON-ASN) - SAPA PEGAWAI"], [], ...[guideHeaders, ...guideRows]]);
+      wsGuide['!cols'] = [{ wch: 32 }, { wch: 70 }, { wch: 30 }];
 
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Sheet Template Pegawai");
       XLSX.utils.book_append_sheet(wb, wsGuide, "Petunjuk Pengisian");
 
-      XLSX.writeFile(wb, "Template_SAPA_Pegawai_UPT_Puskesmas_Sedau.xlsx");
-      alert("✓ Template Excel (.xlsx) sukses diunduh! Silakan isi lalu unggah kembali.");
+      XLSX.writeFile(wb, "Template_SAPA_Pegawai_Lombok_Barat.xlsx");
+      alert("✓ Template Excel (.xlsx) komprehensif sukses diunduh! Silakan lengkapi data Anda lalu unggah kembali.");
     } catch (err: any) {
       console.error(err);
       alert("Terjadi kesalahan meluncurkan unduhan: " + err.message);
@@ -1423,21 +1574,53 @@ export default function App() {
               const foundProfesi = dbState.profesiSdmk.find(p => p.nama_profesi.toLowerCase().includes(profesiStr) || profesiStr.includes(p.nama_profesi.toLowerCase()));
               const id_profesi = foundProfesi ? foundProfesi.id : 1;
 
-              let rawWa = row[8] ? String(row[8]).trim() : '';
+              const nama_jabatan = row[8] ? String(row[8]).trim() : undefined;
+              const jenjang_jafung_val = row[9] ? String(row[9]).trim() : (jenis_pegawai === 'Jafung_Kesehatan' ? 'Ahli Pertama' : null);
+              const golongan_ruang = status_pegawai_detail === 'Non_ASN' ? '-' : (row[10] ? String(row[10]).trim() : 'III/a');
+
+              let rawWa = row[11] ? String(row[11]).trim() : '';
               const nomor_wa = normalizeIndonesianPhoneNumber(rawWa, true) || '+628123456781';
               
-              const golongan_ruang = status_pegawai_detail === 'Non_ASN' ? '-' : (row[9] ? String(row[9]).trim() : 'III/a');
-              const tanggal_lahir = row[10] ? String(row[10]).trim() : '1991-05-15';
-              const sisa_cuti_tahunan = status_pegawai_detail === 'Non_ASN' ? 0 : (row[11] !== undefined ? Math.max(0, parseInt(row[11]) || 0) : 12);
+              const tanggal_lahir = row[12] ? String(row[12]).trim() : '1991-05-15';
+              const tmt_pangkat_terakhir = row[13] ? String(row[13]).trim() : '2025-01-01';
+              const tmt_berkala_terakhir = row[14] ? String(row[14]).trim() : '2025-01-01';
+              const tmt_jabatan_terakhir = row[15] ? String(row[15]).trim() : '2025-01-01';
+              const sisa_cuti_tahunan = status_pegawai_detail === 'Non_ASN' ? 0 : (row[16] !== undefined ? Math.max(0, parseInt(row[16]) || 0) : 12);
               
-              const no_str = row[12] ? String(row[12]).trim() : undefined;
-              const tanggal_terbit_str = row[13] ? String(row[13]).trim() : undefined;
-              const tanggal_akhir_str = row[14] ? String(row[14]).trim() : undefined;
+              // PNS Specific
+              const pns_masa_kerja_golongan = row[17] ? String(row[17]).trim() : undefined;
+              const pns_no_sk = row[18] ? String(row[18]).trim() : undefined;
+              const pns_tgl_sk = row[19] ? String(row[19]).trim() : undefined;
+              const pns_no_pertek_bkn = row[20] ? String(row[20]).trim() : undefined;
+              const pns_tgl_pertek_bkn = row[21] ? String(row[21]).trim() : undefined;
+              const pns_no_sk_jabatan = row[22] ? String(row[22]).trim() : undefined;
+              const pns_tgl_sk_jabatan = row[23] ? String(row[23]).trim() : undefined;
+
+              // PPPK Specific
+              const pppk_no_perjanjian = row[24] ? String(row[24]).trim() : undefined;
+              const pppk_tgl_perjanjian = row[25] ? String(row[25]).trim() : undefined;
+              const pppk_tmt_perjanjian_mulai = row[26] ? String(row[26]).trim() : undefined;
+              const pppk_tmt_perjanjian_selesai = row[27] ? String(row[27]).trim() : undefined;
+              const pppk_no_sk = row[28] ? String(row[28]).trim() : undefined;
+              const pppk_tgl_sk = row[29] ? String(row[29]).trim() : undefined;
+
+              // PKWT / Non-ASN Specific
+              const pkwt_no_sk_kontrak = row[30] ? String(row[30]).trim() : undefined;
+              const pkwt_tgl_sk_kontrak = row[31] ? String(row[31]).trim() : undefined;
+              const pkwt_tmt_sk = row[32] ? String(row[32]).trim() : undefined;
+              const pkwt_masa_kerja = row[33] ? String(row[33]).trim() : undefined;
+              const pkwt_pembiayaan_raw = row[34] ? String(row[34]).trim().toUpperCase() : 'BLUD';
+              const pkwt_pembiayaan = (pkwt_pembiayaan_raw === 'APBD' || pkwt_pembiayaan_raw === 'APBN') ? pkwt_pembiayaan_raw : 'BLUD';
+
+              // STR & SIP
+              const no_str = row[35] ? String(row[35]).trim() : undefined;
+              const tanggal_terbit_str = row[36] ? String(row[36]).trim() : undefined;
+              const tanggal_akhir_str = row[37] ? String(row[37]).trim() : undefined;
               const is_str_seumur_hidup = String(tanggal_akhir_str || "").toLowerCase().includes("seumur") || String(tanggal_akhir_str || "").toLowerCase().includes("hidup");
 
-              const no_sip = row[15] ? String(row[15]).trim() : undefined;
-              const tanggal_terbit_sip = row[16] ? String(row[16]).trim() : undefined;
-              const tanggal_akhir_sip = row[17] ? String(row[17]).trim() : undefined;
+              const no_sip = row[38] ? String(row[38]).trim() : undefined;
+              const tanggal_terbit_sip = row[39] ? String(row[39]).trim() : undefined;
+              const tanggal_akhir_sip = row[40] ? String(row[40]).trim() : undefined;
 
               parsed.push({
                 id: Date.now() + index,
@@ -1447,12 +1630,12 @@ export default function App() {
                 id_puskesmas: targetUnit,
                 tanggal_lahir,
                 golongan_ruang,
-                tmt_pangkat_terakhir: '2025-01-01',
-                tmt_berkala_terakhir: '2025-01-01',
-                tmt_jabatan_terakhir: '2025-01-01',
+                tmt_pangkat_terakhir,
+                tmt_berkala_terakhir,
+                tmt_jabatan_terakhir,
                 jenis_pegawai,
                 id_profesi,
-                jenjang_jafung: jenis_pegawai === 'Jafung_Kesehatan' ? 'Ahli Pertama' : null,
+                jenjang_jafung: jenjang_jafung_val,
                 ak_integrasi_2022: 0,
                 sisa_cuti_tahunan,
                 status_kepegawaian: 'Aktif',
@@ -1460,7 +1643,33 @@ export default function App() {
                 status_pegawai_detail,
                 nomor_wa,
                 nik: nikVal,
+                pangkat_nama: GOLONGAN_TO_PANGKAT[golongan_ruang] || undefined,
+                pns_nama_jabatan: status_pegawai_detail === 'PNS' ? nama_jabatan : undefined,
+                pns_masa_kerja_golongan: status_pegawai_detail === 'PNS' ? pns_masa_kerja_golongan : undefined,
+                pns_tmt_golongan: status_pegawai_detail === 'PNS' ? tmt_pangkat_terakhir : undefined,
+                pns_no_sk: status_pegawai_detail === 'PNS' ? pns_no_sk : undefined,
+                pns_tgl_sk: status_pegawai_detail === 'PNS' ? pns_tgl_sk : undefined,
+                pns_no_pertek_bkn: status_pegawai_detail === 'PNS' ? pns_no_pertek_bkn : undefined,
+                pns_tgl_pertek_bkn: status_pegawai_detail === 'PNS' ? pns_tgl_pertek_bkn : undefined,
+                pns_no_sk_jabatan: status_pegawai_detail === 'PNS' ? pns_no_sk_jabatan : undefined,
+                pns_tgl_sk_jabatan: status_pegawai_detail === 'PNS' ? pns_tgl_sk_jabatan : undefined,
+                pns_tmt_jabatan: status_pegawai_detail === 'PNS' ? tmt_jabatan_terakhir : undefined,
                 pppk_ni: status_pegawai_detail.startsWith('PPPK') ? nip : undefined,
+                pppk_jabatan: status_pegawai_detail.startsWith('PPPK') ? nama_jabatan : undefined,
+                pppk_golongan: status_pegawai_detail.startsWith('PPPK') ? golongan_ruang : undefined,
+                pppk_no_perjanjian: status_pegawai_detail.startsWith('PPPK') ? pppk_no_perjanjian : undefined,
+                pppk_tgl_perjanjian: status_pegawai_detail.startsWith('PPPK') ? pppk_tgl_perjanjian : undefined,
+                pppk_tmt_perjanjian_mulai: status_pegawai_detail.startsWith('PPPK') ? pppk_tmt_perjanjian_mulai : undefined,
+                pppk_tmt_perjanjian_selesai: status_pegawai_detail.startsWith('PPPK') ? pppk_tmt_perjanjian_selesai : undefined,
+                pppk_tmt_golongan: status_pegawai_detail.startsWith('PPPK') ? tmt_pangkat_terakhir : undefined,
+                pppk_no_sk: status_pegawai_detail.startsWith('PPPK') ? pppk_no_sk : undefined,
+                pppk_tgl_sk: status_pegawai_detail.startsWith('PPPK') ? pppk_tgl_sk : undefined,
+                pkwt_no_sk_kontrak: status_pegawai_detail === 'Non_ASN' ? pkwt_no_sk_kontrak : undefined,
+                pkwt_tgl_sk_kontrak: status_pegawai_detail === 'Non_ASN' ? pkwt_tgl_sk_kontrak : undefined,
+                pkwt_tmt_sk: status_pegawai_detail === 'Non_ASN' ? (pkwt_tmt_sk || tmt_pangkat_terakhir) : undefined,
+                pkwt_masa_kerja: status_pegawai_detail === 'Non_ASN' ? pkwt_masa_kerja : undefined,
+                pkwt_pembiayaan: status_pegawai_detail === 'Non_ASN' ? pkwt_pembiayaan : undefined,
+                pkwt_jabatan: status_pegawai_detail === 'Non_ASN' ? nama_jabatan : undefined,
                 no_str,
                 tanggal_terbit_str,
                 tanggal_akhir_str,
@@ -1545,33 +1754,53 @@ export default function App() {
         const foundProfesi = dbState.profesiSdmk.find(p => p.nama_profesi.toLowerCase().includes(profesiStr) || profesiStr.includes(p.nama_profesi.toLowerCase()));
         const id_profesi = foundProfesi ? foundProfesi.id : 1;
 
-        let rawWa = cols[8]?.trim() || '';
-        if (!rawWa.startsWith('+62')) {
-          rawWa = rawWa.replace(/\D/g, '');
-          if (rawWa.startsWith('62')) {
-            rawWa = '+' + rawWa;
-          } else if (rawWa.startsWith('0')) {
-            rawWa = '+62' + rawWa.substring(1);
-          } else if (rawWa) {
-            rawWa = '+62' + rawWa;
-          } else {
-            rawWa = '+62';
-          }
-        }
-        const nomor_wa = rawWa;
+        const nama_jabatan = cols[8]?.trim() || undefined;
+        const jenjang_jafung_val = cols[9]?.trim() || (jenis_pegawai === 'Jafung_Kesehatan' ? 'Ahli Pertama' : null);
+        const golongan_ruang = status_pegawai_detail === 'Non_ASN' ? '-' : (cols[10]?.trim() || 'III/a');
 
-        const golongan_ruang = status_pegawai_detail === 'Non_ASN' ? '-' : (cols[9]?.trim() || 'III/a');
-        const tanggal_lahir = cols[10]?.trim() || '1991-05-15';
-        const sisa_cuti_tahunan = status_pegawai_detail === 'Non_ASN' ? 0 : (parseInt(cols[11]?.trim() || '12') || 12);
+        let rawWa = cols[11]?.trim() || '';
+        const nomor_wa = normalizeIndonesianPhoneNumber(rawWa, true) || '+628123456781';
 
-        const no_str = cols[12]?.trim() || undefined;
-        const tanggal_terbit_str = cols[13]?.trim() || undefined;
-        const tanggal_akhir_str = cols[14]?.trim() || undefined;
+        const tanggal_lahir = cols[12]?.trim() || '1991-05-15';
+        const tmt_pangkat_terakhir = cols[13]?.trim() || '2025-01-01';
+        const tmt_berkala_terakhir = cols[14]?.trim() || '2025-01-01';
+        const tmt_jabatan_terakhir = cols[15]?.trim() || '2025-01-01';
+        const sisa_cuti_tahunan = status_pegawai_detail === 'Non_ASN' ? 0 : (parseInt(cols[16]?.trim() || '12') || 12);
+
+        // PNS Specific
+        const pns_masa_kerja_golongan = cols[17]?.trim() || undefined;
+        const pns_no_sk = cols[18]?.trim() || undefined;
+        const pns_tgl_sk = cols[19]?.trim() || undefined;
+        const pns_no_pertek_bkn = cols[20]?.trim() || undefined;
+        const pns_tgl_pertek_bkn = cols[21]?.trim() || undefined;
+        const pns_no_sk_jabatan = cols[22]?.trim() || undefined;
+        const pns_tgl_sk_jabatan = cols[23]?.trim() || undefined;
+
+        // PPPK Specific
+        const pppk_no_perjanjian = cols[24]?.trim() || undefined;
+        const pppk_tgl_perjanjian = cols[25]?.trim() || undefined;
+        const pppk_tmt_perjanjian_mulai = cols[26]?.trim() || undefined;
+        const pppk_tmt_perjanjian_selesai = cols[27]?.trim() || undefined;
+        const pppk_no_sk = cols[28]?.trim() || undefined;
+        const pppk_tgl_sk = cols[29]?.trim() || undefined;
+
+        // PKWT / Non-ASN Specific
+        const pkwt_no_sk_kontrak = cols[30]?.trim() || undefined;
+        const pkwt_tgl_sk_kontrak = cols[31]?.trim() || undefined;
+        const pkwt_tmt_sk = cols[32]?.trim() || undefined;
+        const pkwt_masa_kerja = cols[33]?.trim() || undefined;
+        const pkwt_pembiayaan_raw = cols[34]?.trim()?.toUpperCase() || 'BLUD';
+        const pkwt_pembiayaan = (pkwt_pembiayaan_raw === 'APBD' || pkwt_pembiayaan_raw === 'APBN') ? pkwt_pembiayaan_raw : 'BLUD';
+
+        // STR & SIP
+        const no_str = cols[35]?.trim() || undefined;
+        const tanggal_terbit_str = cols[36]?.trim() || undefined;
+        const tanggal_akhir_str = cols[37]?.trim() || undefined;
         const is_str_seumur_hidup = String(tanggal_akhir_str || "").toLowerCase().includes("seumur") || String(tanggal_akhir_str || "").toLowerCase().includes("hidup");
 
-        const no_sip = cols[15]?.trim() || undefined;
-        const tanggal_terbit_sip = cols[16]?.trim() || undefined;
-        const tanggal_akhir_sip = cols[17]?.trim() || undefined;
+        const no_sip = cols[38]?.trim() || undefined;
+        const tanggal_terbit_sip = cols[39]?.trim() || undefined;
+        const tanggal_akhir_sip = cols[40]?.trim() || undefined;
 
         parsed.push({
           id: Date.now() + index, // temporary id
@@ -1581,12 +1810,12 @@ export default function App() {
           id_puskesmas: targetUnit,
           tanggal_lahir,
           golongan_ruang,
-          tmt_pangkat_terakhir: '2025-01-01',
-          tmt_berkala_terakhir: '2025-01-01',
-          tmt_jabatan_terakhir: '2025-01-01',
+          tmt_pangkat_terakhir,
+          tmt_berkala_terakhir,
+          tmt_jabatan_terakhir,
           jenis_pegawai,
           id_profesi,
-          jenjang_jafung: jenis_pegawai === 'Jafung_Kesehatan' ? 'Ahli Pertama' : null,
+          jenjang_jafung: jenjang_jafung_val,
           ak_integrasi_2022: 0,
           sisa_cuti_tahunan,
           status_kepegawaian: 'Aktif',
@@ -1594,7 +1823,33 @@ export default function App() {
           status_pegawai_detail,
           nomor_wa,
           nik: nikVal,
+          pangkat_nama: GOLONGAN_TO_PANGKAT[golongan_ruang] || undefined,
+          pns_nama_jabatan: status_pegawai_detail === 'PNS' ? nama_jabatan : undefined,
+          pns_masa_kerja_golongan: status_pegawai_detail === 'PNS' ? pns_masa_kerja_golongan : undefined,
+          pns_tmt_golongan: status_pegawai_detail === 'PNS' ? tmt_pangkat_terakhir : undefined,
+          pns_no_sk: status_pegawai_detail === 'PNS' ? pns_no_sk : undefined,
+          pns_tgl_sk: status_pegawai_detail === 'PNS' ? pns_tgl_sk : undefined,
+          pns_no_pertek_bkn: status_pegawai_detail === 'PNS' ? pns_no_pertek_bkn : undefined,
+          pns_tgl_pertek_bkn: status_pegawai_detail === 'PNS' ? pns_tgl_pertek_bkn : undefined,
+          pns_no_sk_jabatan: status_pegawai_detail === 'PNS' ? pns_no_sk_jabatan : undefined,
+          pns_tgl_sk_jabatan: status_pegawai_detail === 'PNS' ? pns_tgl_sk_jabatan : undefined,
+          pns_tmt_jabatan: status_pegawai_detail === 'PNS' ? tmt_jabatan_terakhir : undefined,
           pppk_ni: status_pegawai_detail.startsWith('PPPK') ? nip : undefined,
+          pppk_jabatan: status_pegawai_detail.startsWith('PPPK') ? nama_jabatan : undefined,
+          pppk_golongan: status_pegawai_detail.startsWith('PPPK') ? golongan_ruang : undefined,
+          pppk_no_perjanjian: status_pegawai_detail.startsWith('PPPK') ? pppk_no_perjanjian : undefined,
+          pppk_tgl_perjanjian: status_pegawai_detail.startsWith('PPPK') ? pppk_tgl_perjanjian : undefined,
+          pppk_tmt_perjanjian_mulai: status_pegawai_detail.startsWith('PPPK') ? pppk_tmt_perjanjian_mulai : undefined,
+          pppk_tmt_perjanjian_selesai: status_pegawai_detail.startsWith('PPPK') ? pppk_tmt_perjanjian_selesai : undefined,
+          pppk_tmt_golongan: status_pegawai_detail.startsWith('PPPK') ? tmt_pangkat_terakhir : undefined,
+          pppk_no_sk: status_pegawai_detail.startsWith('PPPK') ? pppk_no_sk : undefined,
+          pppk_tgl_sk: status_pegawai_detail.startsWith('PPPK') ? pppk_tgl_sk : undefined,
+          pkwt_no_sk_kontrak: status_pegawai_detail === 'Non_ASN' ? pkwt_no_sk_kontrak : undefined,
+          pkwt_tgl_sk_kontrak: status_pegawai_detail === 'Non_ASN' ? pkwt_tgl_sk_kontrak : undefined,
+          pkwt_tmt_sk: status_pegawai_detail === 'Non_ASN' ? (pkwt_tmt_sk || tmt_pangkat_terakhir) : undefined,
+          pkwt_masa_kerja: status_pegawai_detail === 'Non_ASN' ? pkwt_masa_kerja : undefined,
+          pkwt_pembiayaan: status_pegawai_detail === 'Non_ASN' ? pkwt_pembiayaan : undefined,
+          pkwt_jabatan: status_pegawai_detail === 'Non_ASN' ? nama_jabatan : undefined,
           no_str,
           tanggal_terbit_str,
           tanggal_akhir_str,
@@ -3614,19 +3869,23 @@ export default function App() {
                        {/* Copy-Paste area */}
                        <div className="space-y-1.5 font-sans">
                          <div className="flex justify-between items-center text-xs">
-                           <label className="font-bold text-slate-400">Atau Tempel Baris Spreadsheet Excel Di Sini:</label>
-                           <span className="text-[10px] text-slate-500">Mendeteksi format salin sel excel otomatis</span>
+                           <label className="font-bold text-slate-300">Atau Tempel Baris Spreadsheet Excel Di Sini:</label>
+                           <span className="text-[10px] text-emerald-400 font-medium">Mendukung format salin seluruh kolom (41 atribut PNS, PPPK &amp; Non-ASN)</span>
                          </div>
                          <textarea
-                           rows={5}
+                           rows={6}
                            value={excelPasteText}
                            onChange={(e) => handleExcelPasteChange(e.target.value)}
-                           placeholder="NIP / Identitas [Tab] Nama Lengkap [Tab] Gelar Belakang [Tab] Jenis Kelamin [Tab] Status Pegawai [Tab] Rumpun Jabatan [Tab] Golongan Ruang [Tab] Tanggal Lahir [Tab] Sisa Cuti"
-                           className="w-full p-2.5 bg-black/30 text-white border border-white/5 rounded-xl font-mono text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+                           placeholder="Salin langsung baris dari Excel / Spreadsheet lalu tempel di sini...&#10;Urutan Kolom: NIP [Tab] NIK [Tab] Nama Lengkap [Tab] Gelar [Tab] JK [Tab] Status Pegawai [Tab] Rumpun [Tab] Profesi [Tab] Jabatan [Tab] Jenjang [Tab] Golongan [Tab] No WA [Tab] Tgl Lahir [Tab] TMT Pangkat [Tab] TMT Berkala [Tab] TMT Jabatan [Tab] Sisa Cuti [Tab] (Kolom Detail PNS/PPPK/Non-ASN/STR/SIP...)"
+                           className="w-full p-2.5 bg-black/40 text-white border border-emerald-500/20 focus:border-emerald-500 rounded-xl font-mono text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-none transition shadow-inner"
                          />
+                         <p className="text-[10px] text-slate-400 leading-relaxed">
+                           💡 <em>Tip: Unduh <strong>Template Excel Resmi</strong> di atas untuk melihat contoh urutan 41 kolom siap pakai. Jika ada kolom opsional yang kosong, biarkan sel spreadsheet tetap kosong tanpa mengubah urutan kolom.</em>
+                         </p>
                          {excelImportMessage && (
-                           <div className="p-2.5 bg-emerald-950/20 border border-emerald-500/20 text-emerald-400 text-xs font-semibold rounded-lg mt-1 font-sans">
-                             {excelImportMessage}
+                           <div className="p-2.5 bg-emerald-950/40 border border-emerald-500/30 text-emerald-300 text-xs font-semibold rounded-lg mt-1 font-sans flex items-center space-x-2">
+                             <span>✓</span>
+                             <span>{excelImportMessage}</span>
                            </div>
                          )}
                        </div>
